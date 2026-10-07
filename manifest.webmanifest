@@ -8,11 +8,18 @@
   "scope": "./",
   "id": "/nutricio/",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait-primary",
-  "background_color": "#04070b",
-  "theme_color": "#04070b",
-  "categories": ["health", "food", "lifestyle"],
+  "background_color": "#dce1e5",
+  "theme_color": "#dce1e5",
+  "categories": [
+    "health",
+    "food",
+    "lifestyle"
+  ],
   "icons": [
     {
       "src": "icona.svg",

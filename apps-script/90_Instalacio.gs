@@ -105,22 +105,7 @@ function portaDadesDeJefe_(ss) {
   var falten = FULLS_NUTRICIO.filter(function (n) { return !ss.getSheetByName(n); });
   if (!falten.length) return { copiades: [], text: 'ja hi eren, no s\'ha copiat res', origen: null };
 
-  var trobats = [];
-  var it = DriveApp.getFilesByName(NOM_FULL_JEFE);
-  while (it.hasNext()) {
-    var f = it.next();
-    if (f.getMimeType() === MimeType.GOOGLE_SHEETS && !f.isTrashed()) trobats.push(f);
-  }
-  if (!trobats.length) {
-    throw new Error('No trobo el full «' + NOM_FULL_JEFE + '» al teu Drive. ' +
-                    'Sense ell no hi ha d\'on copiar les dades de Nutrició.');
-  }
-  if (trobats.length > 1) {
-    throw new Error('Hi ha ' + trobats.length + ' fulls amb el nom «' + NOM_FULL_JEFE + '». ' +
-                    'No en trio cap a cegues: deixa\'n només un amb aquest nom i torna-ho a executar.');
-  }
-
-  var origen = SpreadsheetApp.openById(trobats[0].getId());
+  var origen = trobaFullJefe_(ss.getId());
   var copiades = [];
   falten.forEach(function (nom) {
     var full = origen.getSheetByName(nom);
@@ -135,6 +120,71 @@ function portaDadesDeJefe_(ss) {
     text: copiades.length ? 'copiades ' + copiades.join(', ') : 'cap pestanya de Nutrició a JEFE',
     origen: origen
   };
+}
+
+/**
+ * QUIN ÉS EL FULL DE JEFE.
+ *
+ * Primer es va buscar pel nom, «JEFE — Assistent», i no hi era: el full havia
+ * tingut altres noms i el teu no es deia així. El nom no és de fiar; el que
+ * hi ha a dins, sí. El full de JEFE és el que té les pestanyes de Nutrició
+ * (`Ingestes`, `NutricioDies`) i les del nucli (`_Config`, `_Moduls`).
+ *
+ *   1. Si a Propietats de l'script hi ha `ID_FULL_JEFE`, és aquest i prou.
+ *   2. Si no, el busca pel nom de sempre i, si no hi és, pel contingut entre
+ *      els fulls de càlcul del teu Drive.
+ *   3. Si en surt més d'un, no en tria cap: diu quins són i com triar-lo.
+ *
+ * El full nou de Nutrició (`idPropi`) no compta mai, encara que ja tingui
+ * alguna d'aquestes pestanyes.
+ */
+function trobaFullJefe_(idPropi) {
+  var posat = PropertiesService.getScriptProperties().getProperty('ID_FULL_JEFE');
+  if (posat) return SpreadsheetApp.openById(posat);
+
+  function esJefe(ss) {
+    return ss.getSheetByName('Ingestes') && ss.getSheetByName('NutricioDies') &&
+           ss.getSheetByName('_Config') && ss.getSheetByName('_Moduls');
+  }
+
+  function candidats(consulta, limit) {
+    var trobats = [], vistos = 0;
+    var it = DriveApp.searchFiles(consulta);
+    while (it.hasNext() && vistos < limit) {
+      var f = it.next();
+      vistos++;
+      if (f.getId() === idPropi) continue;
+      try {
+        var ss = SpreadsheetApp.openById(f.getId());
+        if (esJefe(ss)) trobats.push(ss);
+      } catch (e) { /* un full que no es pot obrir no és el nostre */ }
+    }
+    return trobats;
+  }
+
+  var FULLS = 'mimeType = "application/vnd.google-apps.spreadsheet" and trashed = false';
+  var trobats = candidats(FULLS + ' and title = "' + NOM_FULL_JEFE + '"', 10);
+  if (!trobats.length) {
+    trobats = candidats(FULLS + ' and (title contains "JEFE" or title contains "Popu" or ' +
+                        'title contains "Assistent" or title contains "Jefe")', 40);
+  }
+  if (!trobats.length) {
+    trobats = candidats(FULLS + ' and "me" in owners', 300);
+  }
+
+  if (!trobats.length) {
+    throw new Error('No trobo el full de dades de JEFE en aquest compte: cap full de càlcul teu ' +
+                    'té alhora les pestanyes Ingestes, NutricioDies, _Config i _Moduls. Si és en un ' +
+                    'altre compte de Google, obre aquest projecte amb aquell compte. Si el saps, posa ' +
+                    'el seu identificador a Propietats de l\'script com a ID_FULL_JEFE.');
+  }
+  if (trobats.length > 1) {
+    throw new Error('Hi ha ' + trobats.length + ' fulls que semblen el de JEFE: ' +
+                    trobats.map(function (s) { return '«' + s.getName() + '»'; }).join(', ') +
+                    '. No en trio cap a cegues: posa l\'identificador del bo a Propietats de ' +
+                    'l\'script com a ID_FULL_JEFE i torna-ho a executar.');
+  }
+  return trobats[0];
 }
 
 /**

@@ -1457,7 +1457,7 @@ console.log('\nCap «JEFE» a la vista');
     .replace(/\/\*[\s\S]*?\*\//g, '')
     .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/(^|[^:'"\\])\/\/.*$/gm, '$1');
-  const deixa = /MARCA_JEFE|VERSIO_JEFE|NOM_FULL_JEFE|PortaDadesDeJefe|portaDadesDeJefe_|portaObjectiusDeJefe_|var Jefe = |Jefe\.\w+|jefe: 'ves'|m\.jefe !==|'JEFE — Assistent'|'Dades de JEFE: '|'Objectius de JEFE: '|Nutrició a JEFE|'Ets JEFE|\/\^\\s\*jefe\\s\*\$\/i|id="ic-jefe"/;
+  const deixa = /MARCA_JEFE|VERSIO_JEFE|NOM_FULL_JEFE|PortaDadesDeJefe|portaDadesDeJefe_|portaObjectiusDeJefe_|var Jefe = |Jefe\.\w+|jefe: 'ves'|m\.jefe !==|'JEFE — Assistent'|'Dades de JEFE: '|'Objectius de JEFE: '|Nutrició a JEFE|'Ets JEFE|\/\^\\s\*jefe\\s\*\$\/i|id="ic-jefe"|trobaFullJefe_|esJefe|ID_FULL_JEFE|de dades de JEFE|semblen el de JEFE|title contains "JEFE"|title contains "Jefe"/;
   const trobats = [];
   fs.readdirSync('apps-script').filter((f) => /\.(gs|html)$/.test(f)).forEach((f) => {
     treuComentaris(fs.readFileSync('apps-script/' + f, 'utf8')).split('\n').forEach((l, i) => {
@@ -1477,59 +1477,81 @@ console.log('\nCap «JEFE» a la vista');
    i que si no sap quin és el full bo, s'atura en comptes de triar. */
 console.log('\nPortar les dades de JEFE: copiar, mai moure');
 {
+  /* La regla és que es COPIEN i no es mouen: el full de JEFE es queda tal com
+     és. I es troba PEL QUE HI HA A DINS, no pel nom: la primera vegada es va
+     buscar «JEFE — Assistent» i el full d'en Pol no es deia així. */
   const src = fs.readFileSync('apps-script/90_Instalacio.gs', 'utf8');
   const tros = src.match(/var NOM_FULL_JEFE[^\n]*\n/)[0] + src.match(/var FULLS_NUTRICIO[^\n]*\n/)[0];
   const cos = src.slice(src.indexOf('function portaDadesDeJefe_'), src.indexOf('// ----', src.indexOf('function portaObjectiusDeJefe_')));
 
-  const fulls = (noms) => {
-    const f = {};
-    noms.forEach(([n, files]) => {
-      f[n] = { nom: n, files, tocat: false,
-        getName() { return this.nom; }, getLastRow() { return this.files; },
-        setName(x) { this.nom = x; },
-        copyTo(desti) { const c = Object.assign({}, this, { nom: 'Còpia de ' + n, tocat: false });
-                        desti._fulls.push(c); return c; } };
-    });
-    return f;
-  };
-  const ss = (llista) => ({ _fulls: llista,
+  const pestanya = (n, files) => ({ nom: n, files,
+    getName() { return this.nom; }, getLastRow() { return this.files; },
+    setName(x) { this.nom = x; },
+    copyTo(desti) { const c = Object.assign({}, this, { nom: 'Còpia de ' + n }); desti._fulls.push(c); return c; } });
+  const full = (id, nom, pestanyes) => ({ _id: id, _nom: nom, _fulls: pestanyes,
+    getId() { return this._id; }, getName() { return this._nom; },
     getSheetByName(n) { return this._fulls.find((x) => x.getName() === n) || null; } });
+  const jefe = (id, nom) => full(id, nom, [pestanya('Aliments', 40), pestanya('Ingestes', 900),
+    pestanya('NutricioDies', 120), pestanya('Moviments', 3000), pestanya('_Config', 20), pestanya('_Moduls', 12)]);
 
-  const executa = (fitxersDrive, desti, origen) => {
-    const ctx = { String, Math, MimeType: { GOOGLE_SHEETS: 'sheets' },
-      DriveApp: { getFilesByName: () => { let i = 0; return { hasNext: () => i < fitxersDrive.length, next: () => fitxersDrive[i++] }; } },
-      SpreadsheetApp: { openById: () => origen } };
+  /* Un Drive de mentida: la consulta es llegeix prou per saber si demana un
+     nom exacte, un nom que conté alguna cosa, o tots els fulls. */
+  const executa = (drive, desti, propietat) => {
+    const perId = Object.fromEntries(drive.map((s) => [s.getId(), s]));
+    const ctx = { String, Math,
+      PropertiesService: { getScriptProperties: () => ({ getProperty: () => propietat || null }) },
+      DriveApp: { searchFiles: (q) => {
+        const exacte = (q.match(/title = "([^"]+)"/) || [])[1];
+        const conte = [...q.matchAll(/title contains "([^"]+)"/g)].map((m) => m[1]);
+        const llista = drive.filter((s) => exacte ? s.getName() === exacte
+                                  : conte.length ? conte.some((c) => s.getName().indexOf(c) !== -1) : true)
+                            .map((s) => ({ getId: () => s.getId() }));
+        let i = 0; return { hasNext: () => i < llista.length, next: () => llista[i++] };
+      } },
+      SpreadsheetApp: { openById: (id) => { if (!perId[id]) throw new Error('no hi és'); return perId[id]; } } };
     vm.createContext(ctx);
     vm.runInContext(tros + '\n' + cos + '\nvar __p = portaDadesDeJefe_;', ctx);
     return ctx.__p(desti);
   };
 
-  const fitxer = { getMimeType: () => 'sheets', isTrashed: () => false, getId: () => 'id-jefe' };
-  const o = fulls([['Aliments', 40], ['Ingestes', 900], ['NutricioDies', 120], ['Moviments', 3000]]);
-  const origen = ss(Object.values(o));
-  const desti = ss([]);
-  const r = executa([fitxer], desti, origen);
+  const origen = jefe('id-jefe', 'Popu — Assistent personal');
+  const altre = full('id-altre', 'Registres', [pestanya('Full 1', 3)]);
+  const desti = full('id-nou', 'Nutrició', []);
+  const r = executa([altre, desti, origen], desti);
 
+  cal('troba el full de JEFE encara que no es digui «JEFE — Assistent»', r.copiades.length === 3, r.text);
   cal('es porten les tres pestanyes de Nutrició',
       ['Aliments', 'Ingestes', 'NutricioDies'].every((n) => desti.getSheetByName(n)),
       desti._fulls.map((f) => f.getName()).join(', '));
   cal('amb el seu nom, no «Còpia de…»', !desti._fulls.some((f) => /^Còpia/.test(f.getName())));
-  cal('i res més: les finances no hi van', !desti.getSheetByName('Moviments'));
+  cal('i res més: ni les finances ni el nucli', !desti.getSheetByName('Moviments') && !desti.getSheetByName('_Config'));
   cal('l\'origen no canvia de nom ni de lloc',
-      origen._fulls.length === 4 && origen._fulls.every((f) => !/^Còpia/.test(f.getName())));
+      origen._fulls.length === 6 && origen._fulls.every((f) => !/^Còpia/.test(f.getName())));
   cal('i diu quantes files s\'ha portat', /Ingestes \(899 files\)/.test(r.text), r.text);
 
-  const r2 = executa([fitxer], desti, origen);
+  const r2 = executa([altre, desti, origen], desti);
   cal('tornar-ho a executar no copia res més', desti._fulls.length === 3 && r2.copiades.length === 0,
       desti._fulls.length + ' fulls');
 
+  /* El full nou, un cop té les pestanyes copiades, també «sembla» el de JEFE
+     si algun dia hi ha el nucli: no ha de comptar mai. */
+  const nou2 = full('id-nou2', 'Nutrició', [pestanya('Ingestes', 1), pestanya('NutricioDies', 1),
+                                             pestanya('_Config', 1), pestanya('_Moduls', 1)]);
+  const r3 = executa([nou2, jefe('id-j2', 'Qualsevol nom')], nou2);
+  cal('el full propi no es confon mai amb el de JEFE', /Aliments/.test(r3.text), r3.text);
+
   let err = '';
-  try { executa([], ss([]), origen); } catch (e) { err = e.message; }
-  cal('sense el full de JEFE ho diu i s\'atura', /No trobo el full/.test(err), err);
+  try { executa([altre], full('id-n', 'Nutrició', [])); } catch (e) { err = e.message; }
+  cal('sense el full de JEFE ho diu i s\'atura', /No trobo el full de dades de JEFE/.test(err), err);
 
   err = '';
-  try { executa([fitxer, fitxer], ss([]), origen); } catch (e) { err = e.message; }
-  cal('amb dos fulls amb el mateix nom no en tria cap a cegues', /No en trio cap/.test(err), err);
+  try { executa([jefe('a', 'JEFE vell'), jefe('b', 'JEFE còpia')], full('id-n', 'Nutrició', [])); } catch (e) { err = e.message; }
+  cal('amb dos candidats no en tria cap a cegues, i diu quins són',
+      /No en trio cap/.test(err) && /«JEFE vell»/.test(err) && /«JEFE còpia»/.test(err), err);
+
+  const triat = jefe('id-triat', 'El bo');
+  const r4 = executa([jefe('a', 'JEFE vell'), triat], full('id-n', 'Nutrició', []), 'id-triat');
+  cal('amb ID_FULL_JEFE a les propietats, mana aquest', r4.origen === triat);
 }
 
 console.log(falles ? '\n' + falles + ' falla(des).\n' : '\nTot correcte.\n');
