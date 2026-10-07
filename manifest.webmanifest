@@ -1,0 +1,30 @@
+{
+  "name": "Nutrició",
+  "short_name": "Nutrició",
+  "description": "El que menges, el que cremes i el balanç del dia.",
+  "lang": "ca",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "id": "/nutricio/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#04070b",
+  "theme_color": "#04070b",
+  "categories": ["health", "food", "lifestyle"],
+  "icons": [
+    {
+      "src": "icona.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "icona-maskable.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "maskable"
+    }
+  ]
+}

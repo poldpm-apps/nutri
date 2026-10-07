@@ -1,0 +1,1052 @@
+<script>
+/* JEFE — MÒDUL · Nutrició
+   Món: full de mapa topogràfic. Ve de FitFat, però parla l'idioma del full de mapa.
+
+   LA DECISIÓ QUE MANA: apuntar un aliment ha de ser el camí més curt de la
+   pantalla. Si costa, no s'usa, i un comptador que no s'omple no serveix de
+   res. Per això el formulari d'afegir és sempre visible dins de cada àpat i
+   la llista d'aliments guardats hi és al primer toc: la majoria de dies
+   menges el mateix, i tornar a teclejar «pit de pollastre · 165 · 31» és
+   exactament la fricció que fa abandonar l'eina.
+
+   El balanç es llegeix com un perfil de terreny: el dèficit puja a la dreta,
+   el superàvit baixa a l'esquerra, i la marca de l'objectiu és una fita. */
+
+App.registraVista('nutricio', {
+  render: function (arrel, params) {
+
+    var data = params.data || fmt.avui();
+    var periode = params.periode || 'dia';
+    var apatObert = null;      // quin àpat té el formulari desplegat, si n'hi ha cap
+    var dades = null, aliments = [], ajustos = null;
+
+    var APATS = [
+      { clau: 'dinar',   nom: 'Dinar'   },
+      { clau: 'berenar', nom: 'Berenar' },
+      { clau: 'sopar',   nom: 'Sopar'   }
+    ];
+
+    var r0 = function (n) { return Math.round(Number(n) || 0); };
+    /* Amb coma, que aquí es parla català: «95,8 g» i no «95.8 g». I sense el
+       decimal quan és zero, que «140,0 g» no diu res que no digui «140 g». */
+    var r1 = function (n) {
+      var v = Math.round((Number(n) || 0) * 10) / 10;
+      return (v % 1 === 0 ? String(v) : v.toFixed(1)).replace('.', ',');
+    };
+    var num = function (v) {
+      var n = parseFloat(String(v === undefined || v === null ? '' : v).replace(',', '.'));
+      return isFinite(n) ? n : 0;
+    };
+
+    /* «ABC» NO ÉS ZERO.
+       `num()` torna 0 per a qualsevol cosa que no sigui un número, i això vol
+       dir que escriure malament les calories les apuntava a zero sense dir-ho:
+       l\'aliment entrava amb un valor que tu no havies triat i el dia quedava
+       fals. Aquesta distingeix el buit —que sí que val zero— del que no és cap
+       número, que ha de parar l\'alta i explicar-ho. */
+    var numExacte = function (v) {
+      var t = String(v === undefined || v === null ? '' : v).trim().replace(',', '.');
+      if (!t) return 0;
+      return /^-?\d*\.?\d+$/.test(t) ? parseFloat(t) : null;
+    };
+
+    /* I UN ALIMENT NO PESA MIL TONES.
+       Sense sostre, un dit de més al teclat numèric feia que l\'àpat digués un
+       milió de quilocalories i el balanç del dia deixava de voler dir res.
+       Els límits són generosos a posta: 5 kg d\'un cop, 1.000 kcal per 100 g
+       —l\'oli en té 884— i 100 g de proteïna per 100 g, que és el màxim que hi
+       cap per definició. */
+    var SOSTRE = { grams: 5000, kcal100: 1000, prot100: 100 };
+
+    // ------------------------------------------------------------- capçalera
+
+    var PERIODES = [['dia', 'Dia'], ['setmana', 'Setmana'], ['mes', 'Mes']];
+
+    /* UNA SOLA LÍNIA. El títol diu on ets i, tocant-lo, tries.
+       Abans hi havia la fila de la data i una tira de períodes a sota: dues
+       franges fixes a dalt per una cosa que canvies un cop a la setmana. Les
+       fletxes es queden perquè el dia sí que el canvies constantment. */
+    function capcalera(esAvui) {
+      var sota = (PERIODES.filter(function (p) { return p[0] === periode; })[0] || ['', 'Dia'])[1];
+      return '<h1 class="nomes-lectors">Nutrició</h1>' +
+        '<header class="capcalera capcalera-nutri">' +
+        '<div class="capcalera-fila">' +
+          '<button class="btn btn-fantasma btn-icona" data-salt="-1" aria-label="Anterior">' +
+            ic('esquerra', 'ic-p') + '</button>' +
+          '<button class="titol-periode" data-obre-periode="1" aria-label="' +
+            esc(titolPeriode() + '. Tria què vols veure') + '">' +
+            '<b>' + esc(titolPeriode()) + '</b>' +
+            '<span>' + esc(sota) +
+              (periode === 'dia' && esAvui ? ' · avui' : '') + ' ▾</span>' +
+          '</button>' +
+          '<button class="btn btn-fantasma btn-icona" data-salt="1" aria-label="Següent"' +
+            (esAvui ? ' disabled' : '') + '>' + ic('dreta', 'ic-p') + '</button>' +
+          '<button class="btn btn-fantasma btn-icona" data-ajustos="1" aria-label="Objectius">' +
+            ic('ajust', 'ic-p') + '</button>' +
+        '</div>' +
+      '</header>';
+    }
+
+    function obrePeriode() {
+      var cos = App.modal('Què vols veure', '<div class="tria-periode">' +
+        PERIODES.map(function (p) {
+          return '<button data-va="' + p[0] + '"' +
+                 (p[0] === periode ? ' aria-current="true"' : '') + '>' + p[1] + '</button>';
+        }).join('') +
+        '<hr><button data-anar-avui="1">Anar a avui</button>' +
+      '</div>');
+
+      cos.querySelectorAll('[data-va]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          App.tancaModal();
+          App.ves('nutricio', { data: data, periode: b.dataset.va });
+        });
+      });
+      cos.querySelector('[data-anar-avui]').addEventListener('click', function () {
+        App.tancaModal();
+        App.ves('nutricio', { data: fmt.avui(), periode: periode });
+      });
+    }
+
+    function etiquetaPeriode() {
+      if (periode === 'dia') return fmt.relativa(data);
+      return periode === 'setmana' ? 'Setmana' : 'Mes';
+    }
+
+    function titolPeriode() {
+      if (periode === 'dia') return fmt.llarga(data);
+      if (!dades || !dades.desde) return '…';
+      if (periode === 'mes') {
+        var d = new Date(Number(data.slice(0, 4)), Number(data.slice(5, 7)) - 1, 1);
+        var m = d.toLocaleDateString('ca-ES', { month: 'long', year: 'numeric' });
+        return m.charAt(0).toUpperCase() + m.slice(1);
+      }
+      return fmt.relativa(dades.desde) + ' → ' + fmt.relativa(dades.fins);
+    }
+
+    // ------------------------------------------------------------ vista dia
+
+    /* L'ordre és el de FitFat, i és el bo: les xifres del dia a dalt de tot
+       perquè és el que mires primer, després els àpats que és on treballes, i
+       el tancament al final perquè és l'última cosa que fas del dia. */
+    function pintaDia(d, dEnCau) {
+      dades = d;
+      arrel.innerHTML = capcalera(d.data === fmt.avui()) +
+        '<div class="pagina nutri">' +
+          cridaAvisos() +
+          '<section class="nutri-dalt" id="col-dalt"></section>' +
+          '<section class="nutri-apats" id="col-apats"></section>' +
+          '<section class="nutri-tanca" id="col-tanca"></section>' +
+          (dEnCau ? '<p class="menut">Última còpia desada al telèfon.</p>' : '') +
+        '</div>';
+
+      /* `arrel.querySelector` i no `document.getElementById`: si la vista ja
+         no és a la pantalla, ha d'escriure a la seva capsa i no a la del que
+         hi hagi ara. Vegeu `App.ves` al nucli. */
+      arrel.querySelector('#col-dalt').innerHTML = blocDalt(d);
+      arrel.querySelector('#col-apats').innerHTML =
+        APATS.map(function (m) { return blocApat(d, m); }).join('');
+      arrel.querySelector('#col-tanca').innerHTML = blocTanca(d);
+
+      lligaCapcalera();
+      lligaBalanc();
+      lligaApats();
+      lligaAvisos();
+    }
+
+    /**
+     * «AQUEST APARELL NO REP AVISOS.»
+     *
+     * A JEFE vivia al full índex, i aquí no n'hi ha: l'app s'obre directament
+     * en aquesta pantalla. Sense ell no hi hauria cap lloc on donar el permís,
+     * i el recordatori de les 23:45 —«falten les cremades»— no arribaria mai
+     * sense dir per què. Només surt mentre el permís no està donat.
+     *
+     * El permís s'ha de demanar SEMPRE des d'un toc: si no, el navegador el
+     * denega ell sol i et quedes sense poder-ho tornar a intentar.
+     */
+    function cridaAvisos() {
+      if (!window.Notificacions || !Notificacions.potSerHi()) return '';
+      var p = Notificacions.permis();
+      if (p === 'granted') return '';
+
+      var negat = p === 'denied';
+      return '<div class="crida-avisos">' +
+        '<svg class="ic" aria-hidden="true"><use href="#ic-campana"/></svg>' +
+        '<div>' +
+          '<b>Aquest aparell no rep avisos</b>' +
+          '<p>' + (negat
+            ? 'Has denegat les notificacions en aquest aparell. Per tornar-hi: ' +
+              'si tens l\'app instal·lada, mantén premuda la icona → Informació de ' +
+              'l\'app → Notificacions. Al navegador, el cadenat de la barra ' +
+              'd\'adreces → Notificacions → Permet.'
+            : 'El recordatori del vespre, quan falten les calories cremades, no ' +
+              'et pot arribar aquí fins que ho activis.') + '</p>' +
+          (negat ? '' : '<button class="btn btn-primari" data-avisos>Activa els avisos</button>') +
+        '</div>' +
+      '</div>';
+    }
+
+    function lligaAvisos() {
+      var b = arrel.querySelector('[data-avisos]');
+      if (!b) return;
+      b.addEventListener('click', function () {
+        b.dataset.carregant = '1';
+        Notificacions.activa()
+          .then(function () {
+            App.brindis('Avisos activats en aquest aparell');
+            var c = arrel.querySelector('.crida-avisos');
+            if (c) c.remove();
+          })
+          .catch(function (err) {
+            b.dataset.carregant = '0';
+            App.brindis(err.message, 'error');
+            var c = arrel.querySelector('.crida-avisos');
+            if (c) c.outerHTML = cridaAvisos();   // si l'ha denegat, ara toca l'explicació
+          });
+      });
+    }
+
+    /** Les tres xifres del dia, i la barra de proteïna si hi ha objectiu. */
+    function blocDalt(d) {
+      var t = d.totals;
+      var teObjProt = d.objectius.proteina > 0;
+      var pct = teObjProt ? Math.min(t.proteina / d.objectius.proteina * 100, 100) : 0;
+
+      return '<div class="tres-xifres">' +
+          xifra('Ingerides', r0(t.ingerides), 'kcal') +
+          xifra('Proteïna', r1(t.proteina), 'g') +
+          xifra('Cremades', d.teCremades ? r0(d.cremades) : '—', d.teCremades ? 'kcal' : '') +
+        '</div>' +
+
+        /* L'OBJECTIU DE PROTEÏNA, EN ANELL.
+           Era una barra, i l'app ja té l'anell per dir «quant en portes»: una
+           barra aquí i un anell a la pàgina del dia són dos idiomes per dir
+           exactament el mateix. El que falta va al costat, en text, perquè no
+           depengui de saber llegir un cercle. */
+        (teObjProt
+          ? '<div class="prot-bloc">' +
+              '<div class="anell" style="--p:' + pct.toFixed(0) + '"' +
+                ' role="img" aria-label="' + r1(t.proteina) + ' de ' + r0(d.objectius.proteina) + ' g de proteïna">' +
+                '<b>' + pct.toFixed(0) + '%</b><small>proteïna</small>' +
+              '</div>' +
+              '<div class="prot-diu">' +
+                '<span class="marge">Objectiu</span>' +
+                '<span class="num">' + r1(t.proteina) + ' / ' + r0(d.objectius.proteina) + ' g</span>' +
+                (t.proteina < d.objectius.proteina
+                  ? '<span class="menut">Falten ' + r1(d.objectius.proteina - t.proteina) + ' g</span>'
+                  : '<span class="menut">Assolit</span>') +
+              '</div>' +
+            '</div>'
+          : '');
+    }
+
+    /** El tancament: què has cremat, i què en surt. */
+    function blocTanca(d) {
+      return '<p class="marge">Tancament del dia</p>' +
+
+        '<label class="camp-activitat">' +
+          '<span class="menut">Calories cremades (total del dia, del rellotge)</span>' +
+          '<input id="n-activitat" inputmode="decimal" value="' +
+            (d.teActivitat ? esc(String(d.activitat)) : '') + '" placeholder="p. ex. 2400">' +
+        '</label>' +
+
+        '<div class="fitxa" data-estat="' + esc(d.verdicte.estat) + '">' +
+          '<div class="xifra-gran">' +
+            (d.teCremades
+              ? (d.net > 0 ? '−' : d.net < 0 ? '+' : '') + r0(Math.abs(d.net)) + '<span class="u">kcal</span>'
+              : '—') +
+          '</div>' +
+          '<p class="verdicte">' + esc(d.verdicte.text) + '</p>' +
+          (d.teCremades ? barraBalanc(d) : '') +
+        '</div>';
+    }
+
+    function xifra(etiqueta, valor, unitat) {
+      return '<div class="xifra"><span class="marge">' + esc(etiqueta) + '</span>' +
+             '<b class="num">' + esc(String(valor)) +
+             (unitat ? '<span class="u">' + esc(unitat) + '</span>' : '') + '</b></div>';
+    }
+
+    /** El mateix escalat que FitFat: el centre és l'equilibri. */
+    function barraBalanc(d) {
+      var obj = d.objectius.deficit;
+      var escala = Math.max(800, obj * 1.4, Math.abs(d.net) * 1.15);
+      var ample = Math.min(Math.abs(d.net) / escala * 50, 50);
+      var deficit = d.net > 0;
+      var fita = obj > 0 ? Math.min(obj / escala * 50, 50) : 0;
+
+      return '<div class="balanc">' +
+        '<div class="balanc-via">' +
+          '<i style="left:' + (deficit ? 50 : 50 - ample) + '%;width:' + ample + '%" data-costat="' +
+            (deficit ? 'deficit' : 'superavit') + '"></i>' +
+          '<u></u>' +
+          (fita > 0 ? '<b style="left:' + (50 + fita) + '%"></b>' : '') +
+        '</div>' +
+        '<div class="balanc-peu"><span>← superàvit</span>' +
+          (fita > 0 ? '<span class="fita-txt">objectiu</span>' : '') +
+          '<span>dèficit →</span></div>' +
+      '</div>';
+    }
+
+    function blocApat(d, m) {
+      var apat = null;
+      for (var i = 0; i < d.apats.length; i++) if (d.apats[i].clau === m.clau) apat = d.apats[i];
+      if (!apat) apat = { items: [], kcal: 0, proteina: 0 };
+      var obert = apatObert === m.clau;
+
+      return '<div class="apat" data-apat="' + esc(m.clau) + '">' +
+        '<div class="apat-cap">' +
+          '<h2>' + esc(m.nom) + '</h2>' +
+          '<span class="num menut">' +
+            (apat.items.length ? r0(apat.kcal) + ' kcal · ' + r1(apat.proteina) + ' g' : '') +
+          '</span>' +
+        '</div>' +
+
+        '<div class="apat-items">' +
+          (apat.items.length
+            ? apat.items.map(function (i) {
+                return '<div class="ingesta">' +
+                  '<div style="flex:1;min-width:0">' +
+                    '<div class="nm">' + esc(i.nom) + '</div>' +
+                    '<div class="menut num">' + r0(i.grams) + ' g · ' + r0(i.kcal100) +
+                      ' kcal/100 · ' + r1(i.prot100) + ' prot/100</div>' +
+                  '</div>' +
+                  '<div class="num" style="text-align:right">' +
+                    '<div>' + r0(i.kcal) + '</div>' +
+                    '<div class="menut">' + r1(i.prot) + ' g</div>' +
+                  '</div>' +
+                  '<button class="btn btn-fantasma btn-icona" data-treu="' + esc(i.id) +
+                    '" aria-label="Treu ' + esc(i.nom) + '">' + ic('tancar', 'ic-p') + '</button>' +
+                '</div>';
+              }).join('')
+            : '') +
+        '</div>' +
+
+        /* EL FORMULARI VE PLEGAT, I NOMÉS N'HI HA UN D'OBERT.
+           Els tres àpats amb el formulari desplegat feien la pàgina de 2.325
+           píxels: per veure el tancament del dia havies de passar per sobre de
+           tres formularis buits. Plegats, la pantalla és la llista del que has
+           menjat, que és el que véns a mirar. I obrir-ne un tanca l'altre
+           perquè, si no, tornes a tenir-los tots desplegats en quatre tocs. */
+        '<button class="btn btn-secundari btn-ple apat-obre" data-obre-form="' + esc(m.clau) + '"' +
+          ' aria-expanded="' + (obert ? 'true' : 'false') + '">' +
+          textObre(obert, m.nom) + '</button>' +
+
+        '<div class="apat-form"' + (obert ? '' : ' hidden') + '>' +
+          /* Llista pròpia i no un <select>: el desplegable natiu d'Android
+             dibuixa cada opció amb l'estil del sistema i no admet dues mides
+             de lletra a la mateixa línia. Amb el nom i les xifres iguals de
+             grosses, trobar un aliment costa llegir-ho tot. */
+          '<button class="btn btn-secundari tria-aliment" data-guardats>' +
+            ic('mes', 'ic-p') + 'Tria un aliment guardat</button>' +
+          '<input data-nom placeholder="Aliment" autocomplete="off"' +
+            ' aria-label="Aliment · ' + esc(m.nom) + '">' +
+          '<input data-grams inputmode="decimal" placeholder="grams" class="num" autocomplete="off"' +
+            ' aria-label="Grams · ' + esc(m.nom) + '">' +
+          '<input data-kcal inputmode="decimal" placeholder="kcal/100 g" class="num" autocomplete="off"' +
+            ' aria-label="Quilocalories per 100 g · ' + esc(m.nom) + '">' +
+          '<input data-prot inputmode="decimal" placeholder="prot/100 g" class="num" autocomplete="off"' +
+            ' aria-label="Proteïna per 100 g · ' + esc(m.nom) + '">' +
+          '<button class="btn btn-primari" data-afegeix>Afegeix</button>' +
+          '<button class="btn btn-secundari" data-desa-aliment>Desa l\'aliment</button>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function textObre(obert, nom) {
+      return ic(obert ? 'menys' : 'mes', 'ic-p') +
+             (obert ? 'Tanca' : 'Afegeix-hi') +
+             '<span class="nomes-lectors"> a ' + esc(nom) + '</span>';
+    }
+
+    /**
+     * Obrir el formulari d'un àpat en tanca qualsevol altre.
+     *
+     * Es fa tocant el DOM i no repintant la pàgina: repintar-la enmig d'un
+     * toc et tanca el teclat i et fa perdre el que estiguessis escrivint a
+     * l'altre àpat.
+     */
+    function obreForm(clau) {
+      apatObert = (apatObert === clau) ? null : clau;
+      arrel.querySelectorAll('.apat').forEach(function (sec) {
+        var obert = sec.dataset.apat === apatObert;
+        var f = sec.querySelector('.apat-form');
+        var b = sec.querySelector('[data-obre-form]');
+        if (f) f.hidden = !obert;
+        if (b) {
+          b.setAttribute('aria-expanded', obert ? 'true' : 'false');
+          b.innerHTML = textObre(obert, sec.querySelector('.apat-cap h2').textContent);
+        }
+      });
+      if (apatObert) enfocaCamp(apatObert);
+    }
+
+    function enfocaCamp(clau) {
+      var camp = arrel.querySelector('.apat[data-apat="' + clau + '"] [data-nom]');
+      if (camp) { try { camp.focus(); } catch (e) {} }
+    }
+
+    // -------------------------------------------------------- setmana i mes
+
+    /* LA GRÀFICA DIBUIXA EL BALANÇ, i res més.
+       Abans l'alçada eren les calories ingerides i el color el balanç: dues
+       variables al mateix dibuix, i cap de les dues es podia llegir. Ara la
+       línia del mig és l'equilibri, cap amunt és dèficit i cap avall superàvit.
+       Una barra alta vol dir un dia bo, i prou.
+
+       Setmana i mes són gràfiques diferents a posta: amb set dies hi caben el
+       nom del dia i la xifra a cada fila, i amb trenta-un no. */
+    function pintaPeriode(d) {
+      dades = d;
+
+      var nets = d.dies.map(function (x) { return x.net === null ? 0 : Math.abs(x.net); });
+      var escala = Math.max(600, Math.max.apply(null, nets));
+      var enDeficit = d.dies.filter(function (x) { return x.net !== null && x.net > 0; }).length;
+      var enSuperavit = d.dies.filter(function (x) { return x.net !== null && x.net < 0; }).length;
+      var teObjProt = d.objectius.proteina > 0;
+
+      arrel.innerHTML = capcalera(true) +
+        '<div class="pagina nutri">' +
+          '<section class="nutri-dalt">' +
+            '<div class="tres-xifres">' +
+              xifra('Ingerides / dia', r0(d.mitjanaIngerides), 'kcal') +
+              xifra('Proteïna / dia', r1(d.mitjanaProteina), 'g') +
+              xifra('Balanç / dia',
+                    d.diesAmbBalanc ? signe(d.mitjanaNet) + r0(Math.abs(d.mitjanaNet)) : '—',
+                    d.diesAmbBalanc ? 'kcal' : '') +
+            '</div>' +
+            (teObjProt
+              ? '<div class="prot-bloc">' +
+                  '<div class="prot-cap"><span class="marge">Proteïna mitjana</span>' +
+                    '<span class="num menut">' + r1(d.mitjanaProteina) + ' / ' +
+                    r0(d.objectius.proteina) + ' g</span></div>' +
+                  '<div class="prot-barra"><i style="width:' +
+                    Math.min(d.mitjanaProteina / d.objectius.proteina * 100, 100).toFixed(1) +
+                    '%"></i></div>' +
+                '</div>'
+              : '') +
+          '</section>' +
+
+          '<section>' +
+            '<p class="marge">Balanç diari</p>' +
+            (d.diesApuntats === 0
+              ? '<p class="menut">Encara no hi ha res apuntat en aquest període.</p>'
+              : (periode === 'setmana' ? graficSetmana(d, escala) : graficMes(d, escala))) +
+
+            '<p class="menut" style="margin-top:var(--e3);border-top:1px solid var(--utm-suau);' +
+              'padding-top:var(--e3)">' +
+              d.diesApuntats + (d.diesApuntats === 1 ? ' dia apuntat' : ' dies apuntats') +
+              ' · ' + enDeficit + ' en dèficit · ' + enSuperavit + ' en superàvit' +
+              (d.diesAmbBalanc
+                ? '<br>Balanç acumulat: <b class="num">' + signe(d.netAcumulat) +
+                  r0(Math.abs(d.netAcumulat)) + ' kcal</b>'
+                : '') +
+            '</p>' +
+          '</section>' +
+        '</div>';
+
+      lligaCapcalera();
+      arrel.querySelectorAll('[data-dia]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          App.ves('nutricio', { data: b.dataset.dia, periode: 'dia' });
+        });
+      });
+    }
+
+    /** Menys davant d'un dèficit: el balanç es llegeix com el pes que perds. */
+    function signe(n) { return n > 0 ? '−' : n < 0 ? '+' : ''; }
+
+    function nomDiaCurt(iso) {
+      var p = String(iso).split('-');
+      var dt = new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]), 12);
+      return dt.toLocaleDateString('ca-ES', { weekday: 'short', day: 'numeric' });
+    }
+
+    /** Set files: nom del dia, barra que surt del centre, i la xifra. */
+    function graficSetmana(d, escala) {
+      return '<div class="bal-setmana">' +
+        d.dies.map(function (x) {
+          if (x.net === null) {
+            return '<div class="bal-fila" data-buit="1">' +
+              '<span class="bal-nom">' + esc(nomDiaCurt(x.data)) + '</span>' +
+              '<span class="bal-via"><u></u></span>' +
+              '<span class="bal-xifra">' + (x.apuntat ? '·' : '—') + '</span></div>';
+          }
+          var deficit = x.net > 0;
+          var f = Math.min(Math.abs(x.net) / escala * 50, 50);
+          return '<button class="bal-fila" data-dia="' + esc(x.data) + '"' +
+            ' aria-label="' + esc(fmt.llarga(x.data)) + ': ' +
+              (deficit ? 'dèficit ' : 'superàvit ') + r0(Math.abs(x.net)) + ' kcal">' +
+            '<span class="bal-nom">' + esc(nomDiaCurt(x.data)) + '</span>' +
+            '<span class="bal-via"><u></u>' +
+              '<i data-costat="' + (deficit ? 'deficit' : 'superavit') + '"' +
+              ' style="left:' + (deficit ? 50 : 50 - f) + '%;width:' + f + '%"></i>' +
+            '</span>' +
+            '<span class="bal-xifra" data-costat="' + (deficit ? 'deficit' : 'superavit') + '">' +
+              signe(x.net) + r0(Math.abs(x.net)) + '</span>' +
+          '</button>';
+        }).join('') +
+      '</div>' +
+      '<div class="balanc-peu"><span>← superàvit</span><span>dèficit →</span></div>';
+    }
+
+    /** Un mes sencer: columnes que pugen o baixen d'una línia central. */
+    function graficMes(d, escala) {
+      var n = d.dies.length;
+      var barres = d.dies.map(function (x, i) {
+        if (x.net === null) return '';
+        var deficit = x.net > 0;
+        var h = Math.min(Math.abs(x.net) / escala * 48, 48);
+        var estil = 'left:' + ((i + 0.12) / n * 100).toFixed(2) + '%;' +
+                    'width:' + (0.76 / n * 100).toFixed(2) + '%;' +
+                    (deficit ? 'bottom:50%;' : 'top:50%;') + 'height:' + h.toFixed(2) + '%;';
+        return '<i data-costat="' + (deficit ? 'deficit' : 'superavit') + '" style="' + estil +
+               '" title="' + esc(fmt.llarga(x.data)) + ': ' + signe(x.net) +
+               r0(Math.abs(x.net)) + ' kcal"></i>';
+      }).join('');
+
+      // Les fites van SOTA la gràfica, no a dins. A dins tapaven les barres.
+      var fites = [1, 5, 10, 15, 20, 25, 30].filter(function (v) { return v <= n; });
+
+      return '<div class="bal-mes">' +
+          '<div class="bal-mes-caixa"><u></u>' + barres + '</div>' +
+          '<div class="bal-mes-eix">' +
+            fites.map(function (v) {
+              return '<span style="left:' + ((v - 0.5) / n * 100).toFixed(2) + '%">' + v + '</span>';
+            }).join('') +
+          '</div>' +
+        '</div>' +
+        '<div class="balanc-peu"><span>▲ dèficit</span><span>superàvit ▼</span></div>';
+    }
+
+    // -------------------------------------------------------------- accions
+
+    function lligaCapcalera() {
+      arrel.querySelectorAll('[data-salt]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var n = Number(b.dataset.salt);
+          var nova = periode === 'dia' ? fmt.suma(data, n)
+                   : periode === 'setmana' ? fmt.suma(data, n * 7)
+                   : mouMes(data, n);
+          if (nova > fmt.avui() && periode === 'dia') return;
+          App.ves('nutricio', { data: nova, periode: periode });
+        });
+      });
+
+      var bp = arrel.querySelector('[data-obre-periode]');
+      if (bp) bp.addEventListener('click', obrePeriode);
+
+      var baj = arrel.querySelector('[data-ajustos]');
+      if (baj) baj.addEventListener('click', obreAjustos);
+    }
+
+    function mouMes(iso, n) {
+      var y = Number(iso.slice(0, 4)), m = Number(iso.slice(5, 7)) - 1 + n;
+      var d = new Date(y, m, 1);
+      var ultim = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+      var dia = Math.min(Number(iso.slice(8, 10)), ultim);
+      return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + dia).slice(-2);
+    }
+
+    /**
+     * EL VERDICTE DEL DIA, CALCULAT AQUÍ.
+     *
+     * TÉ UNA BESSONA al servidor —`verdicte_` a 40_Mod_Nutricio.gs— i han de
+     * dir exactament el mateix; hi ha una prova que ho comprova cas per cas.
+     *
+     * Per què es duplica, havent-hi una regla al servidor: perquè posar les
+     * calories cremades i esperar dos segons per saber si estàs en dèficit és
+     * esperar un càlcul que ja pots fer. Les dues xifres —el que has menjat i
+     * el que has cremat— són totes dues aquí; la resta és una resta.
+     */
+    function verdicteLocal(teCremades, net, objectiu) {
+      if (!teCremades) {
+        return { estat: 'sense_dades', text: 'Introdueix les calories cremades per tancar el dia.' };
+      }
+      if (net > 0 && objectiu > 0 && net >= objectiu) {
+        return { estat: 'deficit_assolit', text: 'Dèficit de ' + Math.round(net) + ' kcal — objectiu assolit' };
+      }
+      if (net > 0) {
+        return {
+          estat: 'deficit',
+          text: objectiu > 0
+            ? 'En dèficit de ' + Math.round(net) + ' kcal · falten ' + Math.round(objectiu - net) + ' per l\'objectiu'
+            : 'En dèficit de ' + Math.round(net) + ' kcal'
+        };
+      }
+      if (net === 0) {
+        return { estat: 'equilibri', text: 'En equilibri: has cremat el mateix que has ingerit.' };
+      }
+      return {
+        estat: 'superavit',
+        text: 'En superàvit de ' + Math.round(-net) + ' kcal · avui has menjat més del que has cremat'
+      };
+    }
+
+    function lligaBalanc() {
+      var inp = arrel.querySelector('#n-activitat');
+      if (!inp) return;
+      var previ = inp.value;
+      inp.addEventListener('change', function () {
+        if (inp.value === previ) return;
+        previ = inp.value;
+        var kcal = num(inp.value);
+
+        /* PRIMER ES VEU, DESPRÉS ES DESA. La xifra és teva i el càlcul també:
+           no hi ha cap motiu per mirar dos segons una pantalla que ja sap la
+           resposta. Si el servidor diu una altra cosa, mana ell i es repinta;
+           si falla, es desfà. */
+        if (dades && dades.totals) {
+          dades.activitat = kcal;
+          dades.teActivitat = kcal > 0;
+          dades.cremades = kcal;
+          dades.teCremades = kcal > 0;
+          dades.net = kcal > 0 ? kcal - dades.totals.ingerides : null;
+          dades.verdicte = verdicteLocal(dades.teCremades, dades.net,
+                                         (dades.objectius || {}).deficit || 0);
+          /* ELS DOS BLOCS, no només el de dalt. Les tres xifres són a dalt i el
+             verdicte és a baix, amb el camp que acabes d'omplir: repintant
+             només un, la xifra de cremades canviava i el «estàs en dèficit»
+             es quedava com estava, que és pitjor que no tocar res. */
+          var dalt = arrel.querySelector('#col-dalt');
+          if (dalt) dalt.innerHTML = blocDalt(dades);
+          var tanca = arrel.querySelector('#col-tanca');
+          if (tanca) {
+            tanca.innerHTML = blocTanca(dades);
+            /* El camp s'ha tornat a pintar: torna-hi el que hi havies escrit i
+               deixa'l enfocat si hi eres. */
+            var nou = arrel.querySelector('#n-activitat');
+            if (nou) { nou.value = inp.value; }
+            lligaBalanc();
+          }
+        }
+
+        escriu('nutricio', 'activitat', { data: data, kcal: kcal }, quePinto())
+          .then(function (r) { Cau.oblida('nutricio.'); aplica(r); })
+          .catch(function (err) {
+            App.brindis(err.message, 'error');
+            carrega();          // el que hi ha pintat era una promesa; se'n va
+          });
+      });
+    }
+
+    /**
+     * La llista d'aliments guardats.
+     *
+     * El nom mana i les xifres van petites i grises: el que busques és
+     * «tonyina», no «185». Amb tot de la mateixa mida, cada aliment és una
+     * frase que s'ha de llegir sencera per descartar-la.
+     */
+    function obreAliments(alTriar) {
+      if (!aliments.length) {
+        App.brindis('Encara no tens cap aliment guardat', 'error');
+        return;
+      }
+
+      var cos = App.modal('Aliments guardats',
+        '<input class="cerca-aliment" data-cerca placeholder="Cerca…" autocomplete="off">' +
+        '<div class="aliments" id="llista-aliments"></div>');
+
+      var llista = cos.querySelector('#llista-aliments');
+      var cerca = cos.querySelector('[data-cerca]');
+
+      function pinta(q) {
+        var n = String(q || '').trim().toLowerCase();
+        var mostrats = aliments.filter(function (a) {
+          return !n || String(a.nom).toLowerCase().indexOf(n) !== -1;
+        });
+        llista.innerHTML = mostrats.length
+          ? mostrats.map(function (a) {
+              return '<button class="aliment-fila" data-a="' + esc(a.id) + '">' +
+                '<span class="aliment-nom">' + esc(a.nom) + '</span>' +
+                '<span class="aliment-dades">' + r0(a.kcal100) + ' kcal · ' +
+                  r1(a.prot100) + ' g prot · per 100 g</span>' +
+              '</button>';
+            }).join('')
+          : '<p class="menut">Cap aliment amb aquest nom.</p>';
+
+        llista.querySelectorAll('[data-a]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var t = null;
+            for (var i = 0; i < aliments.length; i++) {
+              if (aliments[i].id === b.dataset.a) t = aliments[i];
+            }
+            App.tancaModal();
+            if (t) alTriar(t);
+          });
+        });
+      }
+
+      pinta('');
+      cerca.addEventListener('input', function () { pinta(cerca.value); });
+    }
+
+    function lligaApats() {
+      arrel.querySelectorAll('[data-obre-form]').forEach(function (b) {
+        b.addEventListener('click', function () { obreForm(b.dataset.obreForm); });
+      });
+
+      arrel.querySelectorAll('.apat').forEach(function (sec) {
+        var apat = sec.dataset.apat;
+        var sel  = sec.querySelector('[data-guardats]');
+        var nom  = sec.querySelector('[data-nom]');
+        var gr   = sec.querySelector('[data-grams]');
+        var kc   = sec.querySelector('[data-kcal]');
+        var pr   = sec.querySelector('[data-prot]');
+        var bt   = sec.querySelector('[data-afegeix]');
+        var bd   = sec.querySelector('[data-desa-aliment]');
+
+        sel.addEventListener('click', function () { obreAliments(function (a) {
+          nom.value = a.nom; kc.value = a.kcal100; pr.value = a.prot100;
+          refresca(); gr.focus();
+        }); });
+
+        function llest() { return nom.value.trim() && num(gr.value) > 0; }
+
+        // El botó ensenya el resultat abans de prémer-lo. Així no cal afegir
+        // per veure si t'has equivocat de coma.
+        function refresca() {
+          if (llest()) {
+            bt.textContent = 'Afegeix · ' + r0(num(gr.value) * num(kc.value) / 100) + ' kcal · ' +
+                             r1(num(gr.value) * num(pr.value) / 100) + ' g';
+          } else {
+            bt.textContent = 'Afegeix';
+          }
+        }
+
+        /* EL QUE ESTAVES ESCRIVINT NO POT DEPENDRE DE NO TOCAR RES.
+           Si recarregaves —o el mòbil et tancava la pestanya— entre prémer
+           «Afegeix» i la resposta del servidor, l\'aliment se n\'anava sense
+           deixar rastre. Aquí no es pot fer com als hàbits i deixar-ho a la
+           cua: reenviar-ho a cegues afegiria el mateix plat dues vegades.
+           El que sí que es pot desar sense risc és el formulari a mig omplir,
+           i tornar-te\'l a deixar tal com estava perquè només l\'hagis de
+           confirmar. */
+        var clauEsborrany = 'nutricio.esborrany';
+
+        function desaEsborrany() {
+          var buit = !nom.value.trim() && !gr.value.trim() && !kc.value.trim() && !pr.value.trim();
+          if (buit) { Cau.treu(clauEsborrany); return; }
+          Cau.set(clauEsborrany, { data: data, apat: apat, nom: nom.value,
+                                   gr: gr.value, kc: kc.value, pr: pr.value });
+        }
+
+        (function recuperaEsborrany() {
+          var e = Cau.get(clauEsborrany, null);
+          if (!e || e.data !== data || e.apat !== apat) return;
+          if (nom.value.trim() || gr.value.trim()) return;   // no trepitgis res escrit ara
+          nom.value = e.nom || ''; gr.value = e.gr || '';
+          kc.value = e.kc || ''; pr.value = e.pr || '';
+          refresca();
+        })();
+
+        [nom, gr, kc, pr].forEach(function (i) {
+          i.addEventListener('input', function () { refresca(); desaEsborrany(); });
+          i.addEventListener('keydown', function (e) { if (e.key === 'Enter') afegeix(); });
+        });
+
+        /* QUÈ HI HA MALAMENT, DIT AMB PARAULES.
+           Abans, prémer «Afegeix» amb el formulari a mitges no feia res de res
+           —ni un camp marcat ni un missatge— i, pitjor, els valors impossibles
+           passaven: calories negatives, proteïna amb lletres convertida en
+           zero, i grams sense sostre. */
+        function problema() {
+          if (!nom.value.trim()) return 'Posa-hi el nom de l\'aliment.';
+          var g = numExacte(gr.value);
+          if (g === null) return 'Els grams han de ser un número.';
+          if (g <= 0) return 'Posa-hi quants grams n\'has menjat.';
+          if (g > SOSTRE.grams) return 'Cinc quilos d\'un cop? Mira els grams.';
+          var k = numExacte(kc.value);
+          if (k === null) return 'Les calories han de ser un número.';
+          if (k < 0) return 'Les calories no poden ser negatives.';
+          if (k > SOSTRE.kcal100) return 'Cap aliment passa de 1.000 kcal per 100 g.';
+          var pt = numExacte(pr.value);
+          if (pt === null) return 'La proteïna ha de ser un número.';
+          if (pt < 0) return 'La proteïna no pot ser negativa.';
+          if (pt > SOSTRE.prot100) return 'No hi caben més de 100 g de proteïna en 100 g.';
+          return '';
+        }
+
+        function afegeix() {
+          var mal = problema();
+          if (mal) { App.brindis(mal, 'error'); return; }
+          bt.disabled = true;
+          escriu('nutricio', 'afegeix', {
+            data: data, apat: apat, nom: nom.value.trim(),
+            grams: num(gr.value), kcal100: num(kc.value), prot100: num(pr.value)
+          }, quePinto()).then(function (r) {
+            nom.value = gr.value = kc.value = pr.value = '';
+            Cau.treu(clauEsborrany);
+            bt.disabled = false;
+            /* El botó torna a dir «Afegeix». Si no, es queda amb la previsió
+               del que acabes d'apuntar i sembla que encara ho hagis de prémer. */
+            refresca();
+            if (navigator.vibrate) { try { navigator.vibrate(12); } catch (e) {} }
+            Cau.oblida('nutricio.');
+            aplica(r, false, true);
+            /* El formulari es queda obert i amb el cursor a punt: després d'un
+               aliment normalment en ve un altre del mateix àpat. */
+            enfocaCamp(apat);
+          }).catch(function (err) {
+            bt.disabled = false;
+            App.brindis(err.message, 'error');
+          });
+        }
+
+        bt.addEventListener('click', afegeix);
+
+        bd.addEventListener('click', function () {
+          if (!nom.value.trim() || num(kc.value) <= 0) {
+            App.brindis('Per desar-lo cal el nom i les kcal per 100 g', 'error');
+            return;
+          }
+          bd.disabled = true;
+          escriu('nutricio', 'desaAliment', {
+            nom: nom.value.trim(), kcal100: num(kc.value), prot100: num(pr.value)
+          }, quePinto()).then(function (r) {
+            // La llista es munta cada cop que s'obre, o sigui que amb tenir
+            // `aliments` al dia ja hi surt: `aplica` ho fa i, amb el tauler
+            // obert, s'espera a repintar fins que el tanquis.
+            Cau.oblida('nutricio.');
+            bd.disabled = false;
+            App.brindis('«' + nom.value.trim() + '» desat a la teva llista');
+            aplica(r);
+          }).catch(function (err) {
+            bd.disabled = false;
+            App.brindis(err.message, 'error');
+          });
+        });
+
+        sec.querySelectorAll('[data-treu]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            /* La creueta és petita i va al costat del plat: preguntar-ho val
+               un toc i estalvia haver de tornar a escriure els quatre camps. */
+            var quin = b.getAttribute('aria-label') || 'aquest aliment';
+            App.confirma('Treure-ho de l\'àpat?',
+              '<p>' + esc(quin.replace(/^Treu\s+/i, '')) + '</p>',
+              'Sí, treu-ho',
+              function (bo) {
+                escriu('nutricio', 'treu', { id: b.dataset.treu }, quePinto())
+                  // Treure'n un és una cosa que vols veure feta: es pinta encara
+                  // que tinguis el formulari de l'àpat obert.
+                  .then(function (r) {
+                    App.tancaModal();
+                    Cau.oblida('nutricio.'); aplica(r, false, true);
+                  })
+                  .catch(function (err) { bo.disabled = false; App.brindis(err.message, 'error'); });
+              });
+          });
+        });
+      });
+    }
+
+    // -------------------------------------------------------------- ajustos
+
+    function obreAjustos() {
+      var a = ajustos || {};
+      var cos = App.modal('Objectius i cos',
+        '<div class="form-ajustos">' +
+          camp('objectiuDeficit', 'Dèficit diari objectiu (kcal)', a.objectiuDeficit) +
+          camp('objectiuProteina', 'Proteïna diària objectiu (g)', a.objectiuProteina) +
+          '<button class="btn btn-primari" data-desa-ajustos>Desa</button>' +
+          '<hr>' +
+          '<p class="marge">Portar-hi les dades de FitFat</p>' +
+          '<p class="menut">Tria el fitxer de «⚙ → Còpia de seguretat → Exporta». ' +
+            'Primer et diré què hi trobo i què faria; no s\'escriu res fins que ho confirmis. ' +
+            'No esborra ni sobreescriu mai res, i es pot repetir sense duplicar.</p>' +
+          '<input type="file" accept="application/json,.json" data-fitxer>' +
+          '<div id="aj-import"></div>' +
+        '</div>');
+
+      lligaImportacio(cos);
+
+      cos.querySelector('[data-desa-ajustos]').addEventListener('click', function () {
+        var p = {};
+        cos.querySelectorAll('[data-c]').forEach(function (i) { p[i.dataset.c] = i.value; });
+        escriu('nutricio', 'desaAjustos', p, quePinto())
+          .then(function (r) {
+            App.tancaModal();
+            App.brindis('Objectius desats');
+            Cau.oblida('nutricio.');
+            aplica(r);
+          })
+          .catch(function (err) { App.brindis(err.message, 'error'); });
+      });
+    }
+
+    /**
+     * Importació en dos temps: primer un assaig que no escriu res i diu què
+     * faria, i només després l'escriptura. Amb dades que només existeixen en
+     * un telèfon, ensenyar el resultat abans de tocar-les no és una cortesia.
+     */
+    function lligaImportacio(cos) {
+      var fitxer = cos.querySelector('[data-fitxer]');
+      var sortida = cos.querySelector('#aj-import');
+      if (!fitxer) return;
+
+      fitxer.addEventListener('change', function () {
+        var f = fitxer.files && fitxer.files[0];
+        if (!f) return;
+        sortida.innerHTML = '<p class="menut">Llegint el fitxer…</p>';
+
+        var lector = new FileReader();
+        lector.onerror = function () {
+          sortida.innerHTML = '<p class="menut" style="color:var(--avis)">No he pogut llegir el fitxer.</p>';
+        };
+        lector.onload = function () {
+          var text = String(lector.result || '');
+          crida('nutricio', 'importaFitFat', { dades: text, simulacio: true })
+            .then(function (r) { mostraAssaig(r, text); })
+            .catch(function (err) {
+              sortida.innerHTML = '<p class="menut" style="color:var(--avis)">' + esc(err.message) + '</p>';
+            });
+        };
+        lector.readAsText(f);
+      });
+
+      function mostraAssaig(r, text) {
+        var res = r.ingestes + r.aliments + r.activitats;
+        sortida.innerHTML =
+          '<div class="fitxa" style="margin-top:var(--e3)">' +
+            '<p class="marge">Què hi he trobat</p>' +
+            /* Amb un fitxer que no és una còpia de FitFat, els comptadors no
+               hi són i sortia «undefined dies amb activitat». */
+            '<p>' + (r.ingestes || 0) + ' ingestes · ' + (r.activitats || 0) + ' dies amb activitat · ' +
+              (r.aliments || 0) + ' aliments' +
+              (r.jaHiEren ? ' · ' + r.jaHiEren + ' que ja hi eren i no tornaré a posar' : '') + '</p>' +
+            (r.ajustos ? '<p class="menut">També hi ha objectius i dades del cos.</p>' : '') +
+            (r.avisos && r.avisos.length
+              ? '<p class="menut" style="color:var(--avis)">' + r.avisos.map(esc).join('<br>') + '</p>' : '') +
+            (res > 0
+              ? '<button class="btn btn-primari" data-confirma style="width:100%;margin-top:var(--e3)">' +
+                  'Importa-ho' + '</button>'
+              : '<p class="menut">No hi ha res de nou per importar.</p>') +
+          '</div>';
+
+        var b = sortida.querySelector('[data-confirma]');
+        if (!b) return;
+        b.addEventListener('click', function () {
+          b.disabled = true;
+          b.textContent = 'Important…';
+          crida('nutricio', 'importaFitFat', { dades: text, simulacio: false })
+            .then(function (fet) {
+              sortida.innerHTML = '<p class="menut">Importat: ' + fet.ingestes + ' ingestes, ' +
+                fet.activitats + ' dies i ' + fet.aliments + ' aliments.</p>';
+              App.brindis('Dades de FitFat importades');
+                      Cau.oblida('nutricio.');
+              carrega();
+            })
+            .catch(function (err) {
+              b.disabled = false;
+              b.textContent = 'Torna-ho a provar';
+              App.brindis(err.message, 'error');
+            });
+        });
+      }
+    }
+
+    function camp(clau, etiqueta, valor) {
+      return '<label><span class="marge">' + esc(etiqueta) + '</span>' +
+             '<input data-c="' + clau + '" inputmode="decimal" class="num" value="' +
+             esc(valor === undefined || valor === null || valor === 0 ? '' : String(valor)) + '" autocomplete="off"></label>';
+    }
+
+    // --------------------------------------------------------------- càrrega
+
+    /* PRIMER EL QUE JA SABEM, DESPRÉS EL QUE ARRIBA.
+       Una petició a Apps Script costa entre un segon i mig i dos i mig i això
+       no ho arregla cap codi nostre: és la plataforma. El que sí que podem
+       arreglar és esperar-la amb la pantalla en blanc. */
+    function claCau() { return 'nutricio.' + periode + '.' + data; }
+
+    var previPintat = null;   // JSON de les dades que hi ha pintades ara
+    var ajornat = null;       // pantalla que espera que pari de tocar coses
+
+    /**
+     * Rebre una pantalla i pintar-la si toca.
+     *
+     * La torna tant `pantalla` com qualsevol escriptura —vegeu `escriu()`—,
+     * perquè desar i tornar a demanar el dia eren dos viatges al servidor i a
+     * Apps Script el viatge és tot el cost. Entrar un aliment ha passat de dos
+     * segons llargs a un.
+     *
+     * NO REFER LA PANTALLA SI NO CAL: si el servidor diu exactament el mateix
+     * que ja teníem, repintar només serveix per destruir el que tinguis obert
+     * o a mig escriure. I si ha canviat però estàs tocant alguna cosa,
+     * s'espera que acabis.
+     */
+    /**
+     * @param forca  Repinta encara que tinguis un camp obert.
+     *
+     * PER QUÈ CAL AQUEST «FORÇA», que és un error que va estar-hi de debò:
+     * l'ajornament hi és per no esborrar-te el que estàs escrivint. Però
+     * després d'AFEGIR un aliment el formulari es queda obert i amb el cursor
+     * al camp del nom —a posta, perquè darrere d'un aliment normalment en ve
+     * un altre—, i això vol dir que sempre hi ha un camp enfocat. La pantalla
+     * s'ajornava, l'ajornament es tornava a ajornar cada quatre dècimes, i
+     * l'aliment que acabaves d'apuntar no sortia MAI a la llista: semblava que
+     * no s'hagués desat.
+     *
+     * Quan el que ha canviat és conseqüència del que acabes de fer tu, i els
+     * camps ja han quedat buits, no hi ha res a protegir: es pinta.
+     */
+    function aplica(r, dEnCau, forca) {
+      if (r.aliments && r.aliments.length) aliments = r.aliments;
+      ajustos = r.ajustos || ajustos;
+      Cau.set(claCau(), r);
+
+      var nou = JSON.stringify(r.dades);
+      if (nou === previPintat) return;
+
+      /* Només té sentit ajornar si ja hi ha alguna cosa pintada: si la
+         pantalla és buida, repintar no pot destruir res i no fer-ho et deixa
+         mirant l'esquelet de càrrega per sempre. */
+      if (!forca && previPintat !== null && App.interactuant()) {
+        var primer = !ajornat;
+        ajornat = r;
+        if (primer) setTimeout(quanPari, 400);
+        return;
+      }
+      previPintat = nou;
+      if (periode === 'dia') pintaDia(r.dades, !!dEnCau); else pintaPeriode(r.dades);
+    }
+
+    /* Es mira cada tant si ja ha acabat, en comptes d'esperar que salti el
+       focus. Un tauler obert sense cap camp enfocat no dispara `focusout` en
+       tancar-se, i llavors el que hi ha ajornat no es pinta mai. */
+    function quanPari() {
+      if (!arrel.isConnected) { ajornat = null; return; }
+      if (App.interactuant()) { setTimeout(quanPari, 400); return; }
+      var r = ajornat;
+      ajornat = null;
+      if (r) aplica(r);
+    }
+
+    /** Els paràmetres que necessita `pantalla` per tornar el que mirem ara. */
+    function quePinto() { return { periode: periode, data: data }; }
+
+    function carrega() {
+      var desat = Cau.get(claCau(), null);
+      if (desat && desat.dades) {
+        aliments = desat.aliments && desat.aliments.length ? desat.aliments : aliments;
+        ajustos = desat.ajustos || ajustos;
+        try {
+          previPintat = JSON.stringify(desat.dades);
+          if (periode === 'dia') pintaDia(desat.dades, true); else pintaPeriode(desat.dades);
+        } catch (e) { previPintat = null; }
+      }
+
+      crida('nutricio', 'pantalla', quePinto())
+        .then(function (r) { aplica(r); })
+        .catch(function (err) {
+          if (desat) App.brindis(err.message, 'error');
+          else arrel.innerHTML = Comp.error(err, true);
+        });
+    }
+
+    arrel.innerHTML = Comp.carregant(4);
+    carrega();
+  }
+});
+</script>
