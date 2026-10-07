@@ -1417,6 +1417,12 @@ console.log('\nUna app entre germanes: res compartit amb les altres del domini')
   cal('el manifest té l\'identificador propi i absolut', man.id === '/nutricio/', man.id);
   cal('i l\'inici i l\'abast relatius, que viatgen sols',
       man.start_url === './' && man.scope === './', man.start_url + ' ' + man.scope);
+  /* ANDROID NO FABRICA L'APP AMB SVG. Amb només icones SVG, Chrome deia
+     «ja està instal·lada» i en obrir-la, «l'app no s'ha pogut obrir»: la
+     instal·lació s'havia quedat a mitges. Calen PNG de 192 i de 512. */
+  cal('hi ha icones PNG de 192 i 512, i una de retallable',
+      ['192x192', '512x512'].every((m) => man.icons.some((i) => i.type === 'image/png' && i.sizes === m)) &&
+      man.icons.some((i) => i.type === 'image/png' && i.purpose === 'maskable'));
   cal('i les icones hi són', man.icons.every((i) => fs.existsSync(i.src)),
       man.icons.map((i) => i.src).join(', '));
 

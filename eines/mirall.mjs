@@ -816,7 +816,7 @@ if (!fs.existsSync(CARPETA)) fs.mkdirSync(CARPETA, { recursive: true });
 /* Les peces d'instal·lació, al costat. Sense elles el navegador no troba el
    treballador de servei i la consola s'omple d'errors que a l'app de debò no
    hi són —i un mirall que avisa de coses falses ensenya a no mirar-lo. */
-['sw.js', 'firebase-messaging-sw.js', 'manifest.webmanifest', 'icona.svg',
+['sw.js', 'firebase-messaging-sw.js', 'manifest.webmanifest', 'icona.svg', 'icona-192.png', 'icona-512.png', 'icona-maskable-512.png', 'apple-touch-icon.png',
  'icona-maskable.svg', 'favicon.svg'].forEach((f) => {
   if (fs.existsSync(f)) fs.copyFileSync(f, path.join(CARPETA, f));
 });

@@ -22,11 +22,12 @@
    «tot el que no sigui meu», cada app que s'actualitzés buidaria la de les
    altres. */
 var PREFIX = 'nutricio-';
-var CAU = PREFIX + 'v3';   // v3: la icona de la sigla
+var CAU = PREFIX + 'v4';   // v4: icones també en PNG (Android les necessita)
 var ESSENCIALS = [
   './',
   './index.html',
   './icona.svg',
+  './icona-192.png',
   './favicon.svg',
   './manifest.webmanifest',
   './fonts/big-shoulders-display.woff2',
