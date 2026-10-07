@@ -65,3 +65,12 @@ Mai al codi ni al repositori.
 | `ID_FULL` | el full de càlcul; la posa `configura()` |
 | `CLAU_ACCES` | la clau de la pantalla; la posa `generaClauAcces()` |
 | `FIREBASE_COMPTE` | els avisos al mòbil |
+
+## Instal·lar-la al mòbil: dues coses que ja han fallat
+
+- **Android necessita icones PNG.** Amb només SVG, Chrome deia «ja està
+  instal·lada» i després «l'app no s'ha pogut obrir». El manifest porta PNG de
+  192 i 512 (i una de retallable) abans dels SVG; una prova ho vigila.
+- **L'`"id"` del manifest és `/nutricio/app` i no es canvia mai més.** Es va
+  haver de canviar una vegada perquè Chrome havia quedat convençut que l'app
+  d'abans encara hi era. Canviar-lo vol dir que, per a Chrome, és una altra app.

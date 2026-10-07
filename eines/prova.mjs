@@ -1414,7 +1414,12 @@ console.log('\nUna app entre germanes: res compartit amb les altres del domini')
       /n\.indexOf\(PREFIX\) === 0 && n !== CAU/.test(sw));
 
   const man = JSON.parse(fs.readFileSync('manifest.webmanifest', 'utf8'));
-  cal('el manifest té l\'identificador propi i absolut', man.id === '/nutricio/', man.id);
+  /* «/nutricio/app» i no «/nutricio/»: la primera instal·lació, encara amb
+     icones només SVG, va deixar Chrome per a Android convençut que l'app ja hi
+     era, i amb aquell identificador no se'n sortia ni desinstal·lant. Un
+     identificador nou és una app nova per a Chrome. No es torna a canviar:
+     canviar-lo vol dir que l'app instal·lada deixa de ser la mateixa. */
+  cal('el manifest té l\'identificador propi i absolut', man.id === '/nutricio/app', man.id);
   cal('i l\'inici i l\'abast relatius, que viatgen sols',
       man.start_url === './' && man.scope === './', man.start_url + ' ' + man.scope);
   /* ANDROID NO FABRICA L'APP AMB SVG. Amb només icones SVG, Chrome deia
