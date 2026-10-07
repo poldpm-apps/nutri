@@ -825,7 +825,7 @@ var Jefe = (function () {
       setTimeout(function () {
         var cos = App.modal(titol,
           '<div class="form-ajustos">' + explicacio +
-            '<button class="btn btn-primari" data-si>' + textSi + '</button>' +
+            '<button class="btn btn-fosc" data-si>' + textSi + '</button>' +
             '<button class="btn btn-secundari" data-no style="margin-top:var(--e2)">' +
               'Deixa-ho estar</button>' +
           '</div>');
@@ -973,21 +973,18 @@ var Jefe = (function () {
     },
 
     /**
-     * FOSC I PROU.
+     * CLAR I PROU.
      *
-     * Hi havia un botó per passar a full de dia i en Pol l'ha tret: el vol
-     * fosc sempre. La funció es queda perquè és qui posa l'atribut en
-     * arrencar, però ja no pregunta res a ningú.
-     *
-     * El full clar segueix definit a l'estil i no s'esborra: és el que fa que
-     * el fosc estigui escrit com una tria i no com l'única cosa que hi ha.
+     * El dorsal és blanc i es fa servir al carrer, de dia: no hi ha tema fosc
+     * ni botó per triar-lo. La funció es queda perquè és qui posa l'atribut en
+     * arrencar i qui substitueix el «fosc» que hi hagi desat d'abans.
      */
     aplicaTema: function () {
-      Cau.set('tema', 'fosc');
-      document.documentElement.setAttribute('data-tema', 'fosc');
+      Cau.set('tema', 'clar');
+      document.documentElement.setAttribute('data-tema', 'clar');
     },
 
-    temaActual: function () { return 'fosc'; }
+    temaActual: function () { return 'clar'; }
   };
 
   /* LES DUES SORTIDES D'UNA PANTALLA D'ERROR, ESCOLTADES UN SOL COP.

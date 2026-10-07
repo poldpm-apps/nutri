@@ -3,41 +3,37 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#e8eef0" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#05080b" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#dce1e5">
+  <meta name="color-scheme" content="light">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>Nutrició</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="mask-icon" href="favicon.svg" color="#4fd6e0">
+  <link rel="mask-icon" href="favicon.svg" color="#ff5a1f">
+  <link rel="preload" href="fonts/big-shoulders-display.woff2" as="font" type="font/woff2" crossorigin>
   <!--INSTALLACIO-->
   <?!= include('ui_estil'); ?>
 </head>
 <body>
 <!--
-  THESIS: la teva vida registrada és terreny, i el compliment és altitud. Refusa
-    la graella de targetes arrodonides amb cercle de progrés i flama de ratxa.
-  OWN-WORLD: full de mapa topogràfic 1:25.000. Paper neutre fred amb marc doble,
-    quadrícula UTM blava, corbes de nivell en sienna, rampa hipsomètrica de vall
-    a cim com a únic sistema de color, simbologia dibuixada (cim, font, refugi,
-    fita, creu, cova, arbre, pont, gual, mina), cotes en itàlica tabular,
-    retolació de marge en versaletes espaiades. Cantonades rectes: els mapes no
-    en tenen de rodones. Tipografia del sistema per obligació — una font web
-    afegiria latència a l'arrencada, que és el risc número u del projecte.
-  STORY: al matí obro i veig el marge del full: una franja per hàbit amb el seu
-    símbol i les seves corbes. En toco les que he fet i marxo. Al vespre, a
-    l'ordinador, miro el full sencer i hi llegeixo el mes com un relleu.
-  FIRST VIEWPORT: mòbil — capçalera amb data i fletxes de dia, i sota la columna
-    de franges de terreny a amplada completa. Escriptori — dues columnes: el
-    control del dia a l'esquerra, el full de mes amb el relleu a la dreta.
-  FORM: full de mapa amb marge i llegenda, direcció triada per l'usuari per sobre
-    del sorteig (seed cb46e09c, assignat 6 de 7: targeta de control).
-  TÈCNICA: les corbes de nivell són SVG generat amb marching squares sobre el camp
-    de compliment (ui_relleu.html). No és una textura: si canvies una dada, el
-    relleu canvia.
-  FINISH: unreviewed and undocumented is unfinished; this build ends with the finish
-    review, the verdict, and DESIGN.md
+  THESIS: el balanç del dia no és un dipòsit que s'omple: és el número d'un
+    dorsal i una posició a la cursa. Refusa el tauler de fitness amb anells.
+  OWN-WORLD: curses de muntanya. Dorsal de Tyvek blanc fred amb quatre
+    imperdibles, franja de color de sortida, xip de cronometratge; full oficial
+    de parcials; bandera de meta escaquejada. Tinta negra, un sol color de
+    cursa (taronja senyal #ff5a1f) per a tot el que és viu. Big Shoulders
+    Display per als números, Archivo per al text, xifres tabulars.
+  STORY: després de cada àpat, apunta un parcial al full; al vespre entra les
+    cremades com qui passa per meta, i el corredor del dorsal es col·loca
+    respecte de la sortida (l'equilibri) i del punt de control (l'objectiu).
+  FIRST VIEWPORT: mòbil — tauler (nom, objectius, dia, període) i el dorsal
+    amb el balanç gegant, el recorregut amb sortida al mig i CP a l'objectiu,
+    i la fila ingerides / proteïna / cremades. Escriptori — dorsal a
+    l'esquerra, full de parcials i meta a la dreta.
+  FORM: «El dorsal», direcció 7 de 7 de la llista pròpia; llavor b55617b0.
+  FINISH: unreviewed and undocumented is unfinished; this build ends with the
+    finish review, the verdict, and DESIGN.md
 -->
 
 <?!= include('ui_icones'); ?>
@@ -69,10 +65,8 @@
 
 <?!= include('ui_marca'); ?>
 <?!= include('ui_app'); ?>
-<?!= include('ui_relleu'); ?>
 <?!= include('ui_notifica'); ?>
 <?!= include('vista_nutricio'); ?>
-<?!= include('ui_visor'); ?>
 
 <script>
   (function () {

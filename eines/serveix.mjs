@@ -15,7 +15,7 @@ const ARREL = path.resolve(process.argv[2] || '.mirall');
 const PORT = Number(process.argv[3] || 4173);
 const TIPUS = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
                 '.svg': 'image/svg+xml', '.json': 'application/json',
-                '.webmanifest': 'application/manifest+json', '.css': 'text/css' };
+                '.webmanifest': 'application/manifest+json', '.css': 'text/css', '.woff2': 'font/woff2', '.jpg': 'image/jpeg', '.png': 'image/png' };
 
 http.createServer((req, res) => {
   const cami = decodeURIComponent(new URL(req.url, 'http://x').pathname);

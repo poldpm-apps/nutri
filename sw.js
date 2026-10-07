@@ -22,13 +22,15 @@
    «tot el que no sigui meu», cada app que s'actualitzés buidaria la de les
    altres. */
 var PREFIX = 'nutricio-';
-var CAU = PREFIX + 'v1';
+var CAU = PREFIX + 'v2';   // v2: el dorsal, amb les fonts a dins
 var ESSENCIALS = [
   './',
   './index.html',
   './icona.svg',
   './favicon.svg',
-  './manifest.webmanifest'
+  './manifest.webmanifest',
+  './fonts/big-shoulders-display.woff2',
+  './fonts/archivo.woff2'
 ];
 
 self.addEventListener('install', function (ev) {

@@ -820,6 +820,11 @@ if (!fs.existsSync(CARPETA)) fs.mkdirSync(CARPETA, { recursive: true });
  'icona-maskable.svg', 'favicon.svg'].forEach((f) => {
   if (fs.existsSync(f)) fs.copyFileSync(f, path.join(CARPETA, f));
 });
+/* I les fonts, que la pantalla les demana amb camí relatiu. */
+if (fs.existsSync('fonts')) {
+  fs.mkdirSync(path.join(CARPETA, 'fonts'), { recursive: true });
+  fs.readdirSync('fonts').forEach((f) => fs.copyFileSync(path.join('fonts', f), path.join(CARPETA, 'fonts', f)));
+}
 fs.writeFileSync(path.join(CARPETA, 'index.html'),
   font.replace(marca, MOCK + marca).replace('</body>', DESPRES + '</body>'));
 

@@ -45,3 +45,6 @@ desktop.ini
 
 # La configuració local de l'editor i del panell de previsualització.
 .claude/
+
+# Les decisions de disseny en curs (pàgina de tria, esbossos).
+.impeccable/
