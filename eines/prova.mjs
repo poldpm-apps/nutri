@@ -1414,12 +1414,13 @@ console.log('\nUna app entre germanes: res compartit amb les altres del domini')
       /n\.indexOf\(PREFIX\) === 0 && n !== CAU/.test(sw));
 
   const man = JSON.parse(fs.readFileSync('manifest.webmanifest', 'utf8'));
-  /* «/nutricio/app» i no «/nutricio/»: la primera instal·lació, encara amb
-     icones només SVG, va deixar Chrome per a Android convençut que l'app ja hi
-     era, i amb aquell identificador no se'n sortia ni desinstal·lant. Un
-     identificador nou és una app nova per a Chrome. No es torna a canviar:
-     canviar-lo vol dir que l'app instal·lada deixa de ser la mateixa. */
-  cal('el manifest té l\'identificador propi i absolut', man.id === '/nutricio/app', man.id);
+  /* L'APP VIU A /nutri/, NO A /nutricio/. Al mòbil d'en Pol hi va quedar una
+     app amagada que reclamava /nutricio/ —d'una primera instal·lació feta
+     a mitges, amb icones només SVG— i Android deia «ja està instal·lada» per a
+     qualsevol cosa que hi hagués a sota, encara que s'esborrés tot. Amb un
+     altre camí, aquella app no hi arriba. L'identificador és el del camí i no
+     es canvia: canviar-lo vol dir una altra app per a Chrome. */
+  cal('el manifest té l\'identificador propi i absolut', man.id === '/nutri/', man.id);
   cal('i l\'inici i l\'abast relatius, que viatgen sols',
       man.start_url === './' && man.scope === './', man.start_url + ' ' + man.scope);
   /* ANDROID NO FABRICA L'APP AMB SVG. Amb només icones SVG, Chrome deia
