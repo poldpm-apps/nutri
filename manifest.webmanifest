@@ -13,8 +13,8 @@
     "minimal-ui"
   ],
   "orientation": "portrait-primary",
-  "background_color": "#dce1e5",
-  "theme_color": "#dce1e5",
+  "background_color": "#e8eef0",
+  "theme_color": "#e8eef0",
   "categories": [
     "health",
     "food",

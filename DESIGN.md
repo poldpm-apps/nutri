@@ -1,50 +1,52 @@
 ---
-name: Nutrició — El dorsal
-description: El balanç del dia és el número d'un dorsal de cursa de muntanya, i l'objectiu és un punt de control que es passa.
+name: Nutrició — El pols
+description: Cada dia és una carena amb un pols a la posició del seu balanç; germana de l'app del cos.
 colors:
-  page: "#dce1e5"
-  tyvek: "#fbfcfd"
-  tyvek-2: "#f1f4f6"
-  ink: "#0b0b0c"
-  ink-2: "#3e454d"
-  ink-3: "#5b636b"
-  hair: "#b9c1c8"
-  race: "#ff5a1f"
-  race-viu: "#ff6d38"
-  race-suau: "#ffe3d8"
-  apagat: "#8c949c"
+  camp: "#e8eef0"
+  camp-alt: "#f3f6f7"
+  blanc: "#fbfcfc"
+  pagina: "#cfd8db"
+  t1: "#bcced4"
+  t2: "#7ab5c1"
+  t3: "#1c8496"
+  t4: "#054a57"
+  tinta: "#0d191e"
+  tinta-2: "#3d5560"
+  fil: "#9fb4bb"
+  ocre: "#85580f"
+  ocre-suau: "#f3ead9"
 typography:
-  bib-number:
-    fontFamily: "Big Shoulders Display, Arial Narrow, sans-serif"
-    fontSize: "clamp(96px, 31vw, 168px)"
-    fontWeight: 900
-    lineHeight: 0.82
+  title:
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "28px"
+    fontWeight: 600
+    lineHeight: 1.1
     letterSpacing: "-0.01em"
-  display:
-    fontFamily: "Big Shoulders Display, Arial Narrow, sans-serif"
-    fontSize: "32px"
-    fontWeight: 800
-    lineHeight: 1
+  verdict:
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "36px"
+    fontWeight: 600
+    lineHeight: 1.05
+    letterSpacing: "-0.02em"
   figure:
-    fontFamily: "Big Shoulders Display, Arial Narrow, sans-serif"
-    fontSize: "30px"
-    fontWeight: 800
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "40px"
+    fontWeight: 500
     lineHeight: 1
+    letterSpacing: "-0.03em"
   body:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "16px"
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "15px"
     fontWeight: 400
-    lineHeight: 1.4
-  label:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "14px"
-    fontWeight: 650
+    lineHeight: 1.45
+  engraved:
+    fontFamily: "Hanken Grotesk, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "12px"
+    fontWeight: 600
     lineHeight: 1.3
+    letterSpacing: "0.14em"
 rounded:
-  bib: "6px"
-  control: "4px"
-  field: "3px"
-  tag: "2px"
+  none: "0px"
 spacing:
   e1: "4px"
   e2: "8px"
@@ -54,165 +56,143 @@ spacing:
   e6: "24px"
   e7: "32px"
   gutter: "16px"
-  touch: "48px"
+  touch: "44px"
 components:
   button-primary:
-    backgroundColor: "{colors.race}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.control}"
-    height: "48px"
+    backgroundColor: "{colors.tinta}"
+    textColor: "{colors.blanc}"
+    rounded: "{rounded.none}"
+    height: "44px"
   button-primary-hover:
-    backgroundColor: "{colors.race-viu}"
+    backgroundColor: "#1d2c32"
   button-secondary:
-    backgroundColor: "{colors.tyvek}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.control}"
-    height: "48px"
-  button-dark:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.tyvek}"
-    rounded: "{rounded.control}"
-    height: "48px"
-  bib:
-    backgroundColor: "{colors.tyvek}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.bib}"
-  bib-band:
-    backgroundColor: "{colors.race}"
-    textColor: "{colors.ink}"
-  meal-band:
-    backgroundColor: "{colors.ink}"
-    textColor: "{colors.tyvek}"
+    backgroundColor: "transparent"
+    textColor: "{colors.tinta}"
+    rounded: "{rounded.none}"
+    height: "44px"
   input:
-    backgroundColor: "#ffffff"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.field}"
-    height: "48px"
+    backgroundColor: "{colors.blanc}"
+    textColor: "{colors.tinta}"
+    rounded: "{rounded.none}"
+    height: "44px"
+  row:
+    backgroundColor: "transparent"
+    textColor: "{colors.tinta}"
+    height: "56px"
 ---
 
-# Nutrició — El dorsal
+# Nutrició — El pols
 
 ## Overview
 
-El món és el de les curses de muntanya: el dorsal de Tyvek amb quatre
-imperdibles, la franja de color de la sortida, el xip de cronometratge, el full
-oficial de parcials i la bandera de meta escaquejada. La idea que mana és que el
-balanç del dia **no s'omple**: és una posició respecte d'un equilibri. El número
-del dorsal és el balanç, i a sota hi ha el recorregut, amb la sortida (0,
-equilibri) al mig, el dèficit cap a la dreta, el superàvit cap a l'esquerra i el
-punt de control (CP) a l'objectiu.
+És el mateix món que l'app del cos (`poldpm-apps/cos`), triat a propòsit
+perquè les dues apps es reconeguin germanes. Es basa en el catàleg de Factory
+Records (*Unknown Pleasures*, Peter Saville) traslladat al camp pàl·lid:
+- filets en rampa de turquesa;
+- números de catàleg (`DIA 281`, `P1`);
+- versaletes gravades;
+- gairebé res imprès.
 
-Pantalla d'operar, no de convèncer. Es fa servir al mòbil, de dia, al carrer i
-amb una mà: tot ha de ser gros, clar i a un toc.
+Regles i alineació, cap targeta.
+
+La peça de Nutrició és el **pols del balanç**:
+- cada dia és una carena plana amb un pols a la posició del seu balanç;
+- l'equilibri és al mig i el dèficit cap a la dreta;
+- l'objectiu és una línia de traços vertical, el punt de control (CP);
+- no hi ha res que s'ompli.
+
+La setmana i el mes són les carenes apilades. La més vella queda al fons i
+clara, i la d'avui davant i fosca.
 
 ## Colors
 
-- **Restringida**: neutres freds i un sol color de cursa.
-- `race` (#ff5a1f) és per a tot el que és viu: la franja del dorsal, el
-  corredor, la bandereta del CP, el botó que apunta i la franja del formulari.
-  Sempre amb tinta a sobre (6,7:1), mai blanc.
-- `ink` és la tinta del dorsal i de les bandes dels àpats. `ink-2` és el text
-  secundari (9,6:1 sobre tyvek) i `ink-3` el més suau que es pot llegir (6:1).
-- `tyvek` és blanc fred, **mai crema**. `page` és l'asfalt clar de la sortida.
-- `apagat` és només per al que encara no té dades: el recorregut en traç i el
-  número quan encara no n'hi ha.
-- No hi ha tema fosc. El dorsal és blanc i es llegeix de dia.
+- **El camp:** `camp` és el fons; `blanc`, el dels camps d'escriure i la fila
+  triada.
+- **La rampa** `t1 → t4`, del clar al fosc:
+  - els clars per al que és vell o secundari;
+  - `t4` per al que és d'ara i el focus.
+- **Tinta:** `tinta` és el text; `tinta-2` és el secundari (6,7:1 sobre el
+  camp); `fil` són les regles.
+- **Ocre:** és l'únic color d'avís, i només per al que s'ha de corregir: el
+  superàvit, els errors i el que queda pendent. Mai per decorar.
+- **Sense tema fosc.** L'app és clara, com la del cos.
 
 ## Typography
 
-- **Big Shoulders Display** (900/800), condensada, per als números: el del
-  dorsal, les xifres del dia, els títols dels blocs i dels àpats.
-- **Archivo** per a tot el text, amb amplada variable: els rètols van al 80–85 %
-  d'amplada i el text corrent al 100 %.
-- Xifres tabulars a tot arreu. Els milers van amb punt («1.670»), i el signe
-  menys és el de debò (−, U+2212).
-- Mínim de 14 px per a tot el que diu alguna cosa. Només el codi del xip, que és
-  decoració, baixa a 12 px.
-- Les dues fonts viuen a `fonts/` (latin, woff2, OFL) i no a Google.
+- **Hanken Grotesk** sola, de 400 a 600, amb xifres tabulars a tot arreu.
+  Viu a `fonts/` i és la mateixa que la del cos.
+- **El gravat:** 12 px, 600, versaletes amb un espaiat de 0,14 em. Fa de rètol
+  de catàleg.
+- **Mides:**
+  - títol de pantalla: 28 px;
+  - veredicte en una paraula: 36 px;
+  - xifres grans: 40 px a 500;
+  - cos: 15 px.
+- **Xifres:** els milers van amb punt («1.670») i el menys és el de debò (−).
 
 ## Layout
 
 - Mòbil primer, amb un marge de 16 px.
-  - **Ordre:** el tauler (nom, Objectius, dia, Dia/Setmana/Mes), el dorsal, el
-    full d'àpats i la meta.
+  - **Ordre:** la marca, el títol, el període, el pas de dia entre regles, el
+    veredicte, el pols, les quatre xifres en una quadrícula de 2×2, els àpats i
+    el tancament.
 - A ≥ 900 px, el marge passa a 28 px.
-  - **Tauler:** en una sola fila.
-  - **Columnes:** el dorsal a l'esquerra, fix mentre baixes, i el full i la meta
-    a la dreta.
-- Escala d'espais: 4/8/12/16/20/24/32. Tocs de 48 px; els botons de les finestres
-  i els segmentats, de 44 px com a mínim.
+  - **Columnes:** el pols i les xifres a l'esquerra, fixos mentre baixes, i els
+    àpats a la dreta.
+- Escala d'espais: 4/8/12/16/20/24/32. Tocs de 44 px com a mínim; les files són
+  de 56.
 
 ## Elevation & Depth
 
-- Pla. Els blocs es distingeixen per un contorn d'1 px a 10 % de tinta, no per
-  ombres.
-- L'única profunditat és la dels imperdibles, amb una ombra interior petita.
-- La fibra del Tyvek és un soroll SVG entre el 6 i el 9 % sobre el blanc del
-  dorsal i de les targetes d'estat.
+Pla del tot. No hi ha ombres, només regles:
+- de 1 px en `tinta`, per obrir una secció;
+- de 1 px en `fil`, entre files.
 
 ## Shapes
 
-- Puntes gairebé rectes: el dorsal a 6 px, els controls a 4, els camps a 3 i les
-  etiquetes a 2.
-- Les franges de color són bandes de dins del bloc, amb la vora de dalt. Mai una
-  vora lateral de color, i mai una vora gruixuda sobre una cantonada arrodonida.
-- La bandera de meta és un escaquer de 14 px.
+- Cantonades rectes a tot arreu, incloses les dels botons i els camps.
+- Les icones són d'un sol traç de 1,6, arrodonit i sense farciment, com les del
+  cos.
 
 ## Components
 
-- **Dorsal**
-  - Franja taronja amb el títol i l'objectiu, i quatre imperdibles.
-  - El número i la categoria, en una caixa de 2 px.
-  - El recorregut, amb `role="img"` i una frase sencera a `aria-label`.
-  - La fila de tres caselles i el xip amb el dia gravat.
-  - Mentre no hi ha cremades, el número és el que portes menjat i el recorregut
-    va en traç.
-- **Recorregut**
-  - L'escala és la de FitFat: ±800 com a mínim, i sempre hi caben el CP i el
-    balanç.
-  - El corredor surt de la sortida un sol cop (600 ms, ease-out).
-  - Prop del CP, la bandereta gira i l'etiqueta s'obre cap a fora.
-- **Full de parcials**
-  - Cada àpat és una banda negra amb «P1/P2/P3» en taronja i el total.
-  - Cada aliment és una fila: nom, especificació a 14 px, kcal en xifra
-    condensada, i una creu de 48 px.
-- **Formulari d'inscripció**
-  - Franja taronja amb «Afegeix al dinar» i «Tanca».
-  - Botó «Tria un aliment guardat» i camps amb etiqueta visible.
-  - L'error surt al costat del camp, amb `role="alert"`.
-  - El botó principal ensenya el resultat abans de prémer-lo («Afegeix · 107 kcal
-    · 1,3 g»).
-- **Meta**
-  - Escaquer, el camp de cremades en xifra gran, el compte amb signe i el
-    veredicte amb un senyal rodó.
-- **Classificació (setmana)**
-  - Cada fila és un sol botó de 56 px, també els dies sense dades.
-  - Cada fila té un mini-recorregut i la xifra.
-  - DNS vol dir sense dades.
-- **Perfil (mes)**
-  - Una columna tocable per dia: amunt, dèficit en tinta; avall, superàvit en
-    taronja. El CP és una línia de traços.
-- **Fulls que pugen** (finestres)
-  - Pugen de baix al mòbil i surten al centre a escriptori.
-  - Capçalera enganxada, amb la franja taronja per dins.
-  - Focus tancat a dins; Escape tanca.
-  - Confirmar una acció que treu alguna cosa és un botó negre.
-- **Brindis:** negre amb la icona en taronja; en cas d'error, taronja amb tinta.
-- **Icones:** un sol traç de 2,2 px, quadrat, sense farciment.
+- **Capçalera:**
+  - a dalt, la marca (icona i «NUTRICIÓ» gravat) i «Objectius» en botó de filet;
+  - a sota, el títol en gran;
+  - el període en tres pestanyes gravades, amb un subratllat de 2 px en `t4`;
+  - el pas de dia entre dues regles.
+- **Veredicte:** la línia gravada `DIA 281 · dj 8 oct · avui`, una paraula
+  grossa («Objectiu assolit», «En dèficit», «En superàvit» en ocre, «Falten les
+  cremades») i el pols.
+- **Xifres:** quatre caselles en una quadrícula de 2×2 separades per regles:
+  el gravat, la xifra gran amb la unitat i una línia de detall.
+- **Àpats:** cada àpat té `P1/P2/P3` gravat i el nom, i el total a la dreta.
+  - Cada aliment és una fila: el nom, l'especificació en `tinta-2`, les kcal i
+    la proteïna a la dreta, i una creu de 44 px.
+  - El formulari queda entre regles, amb les etiquetes gravades.
+  - El botó principal és ple i ensenya el resultat abans de prémer-lo.
+- **Tancament:** el camp de cremades en xifra gran, el compte i el veredicte
+  en una línia.
+- **Dies del període:** cada dia és una fila de catàleg (`DIA 279 / dt 6`),
+  amb el veredicte i la xifra.
+  - Tota la fila és un botó.
+  - Al mes, n'hi ha set a la vista, i «Tots els dies · 30» desplega la resta.
+- **Fulls que pugen:** camp pàl·lid i capçalera enganxada sobre una regla de
+  tinta. Confirmar una acció que treu alguna cosa és el botó ple.
+- **Brindis:** la confirmació és en tinta, i l'error en ocre.
 
 ## Do's and Don'ts
 
 - **Fes:**
-  - un sol taronja, sempre amb tinta a sobre;
-  - números en Big Shoulders, i milers amb punt;
-  - posicions respecte de l'equilibri.
+  - regles i alineació;
+  - números de catàleg;
+  - la rampa per dir del vell al nou;
+  - l'ocre només per corregir;
+  - el pols a la posició del balanç.
 - **No facis:**
-  - anells de progrés, barres que s'omplen, degradats o ombres;
-  - cap vora lateral de color;
-  - tema fosc;
-  - res que recordi JEFE: ni mapes topogràfics, ni corbes de nivell, ni consola
-    fosca amb cian.
-- **Focus:** tinta i taronja alhora, perquè es vegi sobre blanc, sobre gris i
-  sobre negre.
-- **Moviment:** només el corredor que surt i la resposta en prémer (escala 0,97).
-  Amb `prefers-reduced-motion` no es mou res.
+  - targetes, ombres o cantonades arrodonides;
+  - anells de progrés o barres que s'omplen;
+  - cap segon color d'accent;
+  - res de JEFE ni del dorsal, el disseny anterior d'aquesta app.
+- **Abans de canviar res,** mira l'app del cos. Les dues han de continuar sent
+  germanes.

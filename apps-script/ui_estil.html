@@ -1,87 +1,69 @@
 <style>
 /* =========================================================================
-   NUTRICIÓ — EL DORSAL
+   NUTRICIÓ — EL POLS
    =========================================================================
 
-   El món és el de les curses de muntanya: el dorsal de Tyvek amb els quatre
-   imperdibles, la franja de color de la sortida, el xip de cronometratge i
-   el full oficial de parcials. El balanç del dia és el número del dorsal, i
-   l'objectiu és un punt de control que es passa: no hi ha res que s'ompli.
+   El mateix món que l'app del cos, perquè són germanes: un catàleg de
+   Factory Records —Unknown Pleasures, Peter Saville— traslladat al camp
+   pàl·lid. Filets en rampa de turquesa, números de catàleg, versaletes
+   gravades, i gairebé res imprès. Regles i alineació; cap targeta.
 
-   Tinta negra sobre blanc fred, i UN sol color de cursa —el taronja senyal—
-   per a tot el que és viu: el corredor, el punt de control i el botó que
-   apunta. Cantonades gairebé rectes: un dorsal té les puntes arrodonides
-   i prou.
+   La peça de Nutrició és el POLS DEL BALANÇ: cada dia és una carena plana
+   amb un pols a la posició del seu balanç. L'equilibri és el mig, el dèficit
+   cap a la dreta, i l'objectiu una línia de traços que es travessa. La
+   setmana i el mes són les carenes apilades, l'una darrere l'altra.
 
-   Les fonts viuen al repositori (`fonts/`) i no a Google: el que tarda a
-   arrencar és el que no s'usa. Si no carreguen —servit des d'Apps Script, per
-   exemple—, la pantalla cau a lletres del sistema i segueix funcionant.
+   Una sola font —Hanken Grotesk—, tres pesos. Un sol color d'avís, l'ocre,
+   i només per al que s'ha de corregir: el superàvit i els errors.
    ========================================================================= */
 
 @font-face {
-  font-family: "Big Shoulders Display";
-  src: url("fonts/big-shoulders-display.woff2") format("woff2");
-  font-weight: 700 900; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: "Archivo";
-  src: url("fonts/archivo.woff2") format("woff2");
-  font-weight: 400 800; font-stretch: 62% 125%; font-style: normal; font-display: swap;
+  font-family: "Hanken Grotesk";
+  src: url("fonts/hanken-grotesk.woff2") format("woff2");
+  font-weight: 400 600; font-style: normal; font-display: swap;
 }
 
 :root {
   color-scheme: light;
 
-  /* --- materials --- */
-  --page:      #dce1e5;   /* l'asfalt clar de la zona de sortida */
-  --tyvek:     #fbfcfd;   /* el dorsal: blanc fred, mai crema */
-  --tyvek-2:   #f1f4f6;
-  --ink:       #0b0b0c;   /* la tinta del número */
-  --ink-2:     #3e454d;   /* text secundari: 9,6:1 sobre tyvek, 7,4:1 sobre page */
-  --ink-3:     #5b636b;   /* el més suau que es pot llegir: 6:1 sobre tyvek */
-  --hair:      #b9c1c8;
-  --race:      #ff5a1f;   /* el color de la sortida: sempre amb tinta a sobre (6,7:1) */
-  --race-viu:  #ff6d38;
-  --race-suau: #ffe3d8;
-  --apagat:    #8c949c;   /* el que encara no té dades */
+  /* --- el camp i la rampa (la de la icona del cos) --- */
+  --camp:     #e8eef0;   /* el camp sense imprimir */
+  --camp-alt: #f3f6f7;   /* seleccionat, a sobre */
+  --blanc:    #fbfcfc;
+  --pagina:   #cfd8db;   /* el que queda fora del camp, i la cortina */
+  --t1: #bcced4; --t2: #7ab5c1; --t3: #1c8496; --t4: #054a57;
+  --tinta:    #0d191e;
+  --tinta-2:  #3d5560;   /* text secundari: 6,7:1 sobre el camp */
+  --fil:      #9fb4bb;   /* filets de regla */
+  --fil-fort: #0d191e;
+  --ocre:     #85580f;   /* l'únic avís: 5,2:1 */
+  --ocre-suau:#f3ead9;
+  --apagat:   #6f858d;   /* desactivat: només per a vores i coses que no es llegeixen */
 
-  /* --- tipus --- */
-  --display: "Big Shoulders Display", "Arial Narrow", "Roboto Condensed", sans-serif-condensed, sans-serif;
-  --text: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font: "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* --- escala: 4 / 8 / 12 / 16 / 20 / 24 / 32 --- */
   --e1: 4px; --e2: 8px; --e3: 12px; --e4: 16px; --e5: 20px; --e6: 24px; --e7: 32px;
   --gutter: 16px;
-  --toc: 48px;            /* un toc amb el polze, dret i a mig fer */
-  --r: 6px;               /* les puntes d'un dorsal */
-  --r-c: 4px;             /* controls */
+  --toc: 44px;
 
-  /* --- moviment --- */
   --ease-out: cubic-bezier(.23, 1, .32, 1);
   --ease-drawer: cubic-bezier(.32, .72, 0, 1);
 
-  /* --- capes --- */
   --z-marca: 4; --z-avisos: 20; --z-fosc: 50; --z-brindis: 60;
-
-  /* La fibra del Tyvek. Dos sorolls, un d'estirat i un de fi; a 6–9 % no
-     es veu com a textura sinó com a material, i sense ells el dorsal és un
-     rectangle blanc. */
-  --fibra: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .55' numOctaves='3' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .4 0 0 0 0 .46 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E"),
-           url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='9'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .34 0 0 0 0 .4 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
 }
 
 /* ------------------------------------------------------------------ base */
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; background: var(--page); }
+html { -webkit-text-size-adjust: 100%; background: var(--camp); }
 @media (pointer: fine) { html { overscroll-behavior: none; } }
 body {
   margin: 0; min-height: 100dvh;
-  background: var(--page); color: var(--ink);
-  font-family: var(--text); font-size: 16px; line-height: 1.4;
+  background: var(--camp); color: var(--tinta);
+  font-family: var(--font); font-size: 15px; line-height: 1.45;
   font-variant-numeric: tabular-nums;
-  -webkit-font-smoothing: antialiased;
-  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
 }
 button, input, select, textarea { font: inherit; color: inherit; }
@@ -89,594 +71,361 @@ button { touch-action: manipulation; }
 h1, h2, h3, p, dl, dd, ul, ol { margin: 0; padding: 0; }
 ul, ol { list-style: none; }
 h1, h2, h3 { text-wrap: balance; }
-hr { border: 0; border-top: 2px solid var(--ink); margin: var(--e4) 0; }
+hr { border: 0; border-top: 1px solid var(--fil); margin: var(--e2) 0; }
 
 .nomes-lectors {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
+:focus-visible { outline: 2px solid var(--t4); outline-offset: 2px; }
 
-/* El focus: tinta i taronja, visible sobre blanc, sobre gris i sobre negre. */
-:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; box-shadow: 0 0 0 5px var(--race); }
-
-.num { font-variant-numeric: tabular-nums; }
-.menut { font-size: 14px; color: var(--ink-2); line-height: 1.4; font-weight: 550; }
-.marge {
-  font-size: 14px; font-weight: 700; font-stretch: 80%; letter-spacing: .03em;
-  color: var(--ink-2);
+/* --- tipus: el gravat del catàleg --- */
+.gravat, .marge {
+  font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--tinta-2); line-height: 1.3;
 }
+.gravat.tinta { color: var(--tinta); }   /* «tinta» i no «fosc»: .fosc és la cortina de les finestres */
+.num-cat { font-weight: 600; color: var(--tinta); letter-spacing: .1em; }
+.menut { font-size: 14px; color: var(--tinta-2); line-height: 1.45; }
+.num { font-variant-numeric: tabular-nums; }
 
 /* ---------------------------------------------------------------- icones */
 
 .ic { width: 24px; height: 24px; display: block; flex: none; fill: none;
-      stroke: currentColor; stroke-width: 2.2; stroke-linecap: square; stroke-linejoin: miter; }
+      stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .ic-p { width: 18px; height: 18px; }
-.ic-g { width: 36px; height: 36px; stroke-width: 2; }
+.ic-g { width: 32px; height: 32px; stroke-width: 1.4; }
 
 /* ---------------------------------------------------------------- botons */
 
 .btn {
-  min-height: var(--toc); padding: 0 var(--e4);
   display: inline-flex; align-items: center; justify-content: center; gap: var(--e2);
-  border: 2px solid var(--ink); border-radius: var(--r-c);
-  background: var(--tyvek); color: var(--ink);
-  font-weight: 650; font-size: 15px; line-height: 1.15; text-align: center;
+  min-height: var(--toc); padding: 0 var(--e4);
+  border: 1px solid var(--tinta); border-radius: 0; background: transparent; color: var(--tinta);
+  font-size: 14px; font-weight: 600; letter-spacing: .02em; line-height: 1.2; text-align: center;
   cursor: pointer; text-decoration: none;
-  transition: transform 140ms var(--ease-out), background-color 140ms ease;
+  transition: transform 120ms var(--ease-out), background-color 150ms ease, color 150ms ease;
 }
 .btn:active { transform: scale(.97); }
-.btn:disabled { cursor: not-allowed; border-color: var(--apagat); color: var(--ink-3); background: var(--tyvek-2); }
-.btn:disabled:active { transform: none; }
-.btn-primari { background: var(--race); color: var(--ink); font-weight: 750; }
-.btn-secundari { background: var(--tyvek); }
-.btn-fosc { background: var(--ink); color: var(--tyvek); }
-.btn-fantasma { border-color: transparent; background: transparent; }
+.btn-primari { background: var(--tinta); color: var(--blanc); }
+.btn-secundari { background: transparent; }
+.btn-fosc { background: var(--tinta); color: var(--blanc); }
+.btn-fantasma { border-color: transparent; }
 .btn-icona { width: var(--toc); min-width: var(--toc); padding: 0; }
 .btn-ple { width: 100%; }
+.btn:disabled { border-color: var(--fil); color: var(--apagat); background: transparent; cursor: not-allowed; }
+.btn:disabled:active { transform: none; }
 @media (hover: hover) and (pointer: fine) {
-  .btn:not(:disabled):hover { background: var(--tyvek-2); }
-  .btn-primari:not(:disabled):hover { background: var(--race-viu); }
-  .btn-fosc:not(:disabled):hover { background: #26282b; }
-  .btn-fantasma:not(:disabled):hover { background: rgba(11, 11, 12, .06); }
+  .btn:not(:disabled):hover { background: var(--camp-alt); }
+  .btn-primari:not(:disabled):hover, .btn-fosc:not(:disabled):hover { background: #1d2c32; }
 }
-
-/* Mentre espera el servidor: el text se'n va i hi queda la roda. */
 .btn[data-carregant="1"] { color: transparent; position: relative; pointer-events: none; }
 .btn[data-carregant="1"]::after {
-  content: ""; position: absolute; width: 18px; height: 18px;
-  border: 2.5px solid var(--ink); border-top-color: transparent; border-radius: 50%;
+  content: ""; position: absolute; width: 16px; height: 16px;
+  border: 1.5px solid var(--tinta); border-top-color: transparent; border-radius: 50%;
   animation: gira .7s linear infinite;
 }
+.btn-primari[data-carregant="1"]::after, .btn-fosc[data-carregant="1"]::after { border-color: var(--blanc); border-top-color: transparent; }
 @keyframes gira { to { transform: rotate(360deg); } }
+
+.enllac {
+  display: inline-flex; align-items: center; gap: var(--e1); min-height: var(--toc); padding: 0 2px;
+  border: 0; background: none; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--tinta);
+}
+@media (hover: hover) and (pointer: fine) { .enllac:hover { text-decoration: underline; text-underline-offset: 3px; } }
 
 /* ---------------------------------------------------------------- camps */
 
 .camp { display: block; }
 .camp + .camp, .avis + .camp { margin-top: var(--e4); }
-.camp > span { display: block; margin-bottom: var(--e1); font-size: 14px; font-weight: 650; font-stretch: 85%; }
+.camp > span { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta-2); }
 .entrada {
   width: 100%; min-height: var(--toc); padding: 0 var(--e3);
-  border: 2px solid var(--ink); border-radius: 3px; background: #fff;
-  font-size: 17px; font-weight: 600;
+  border: 1px solid var(--tinta); border-radius: 0; background: var(--blanc);
+  font-size: 16px; font-weight: 500;
 }
-.entrada::placeholder { color: var(--ink-3); font-weight: 500; opacity: 1; }
-.entrada:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--race); }
-.entrada[aria-invalid="true"] { border-color: var(--race); box-shadow: inset 4px 0 0 var(--race); }
-input[type="file"].entrada { padding: var(--e3); font-size: 15px; min-height: auto; }
+.entrada::placeholder { color: var(--tinta-2); opacity: .75; font-weight: 400; }
+.entrada:focus-visible { outline: 2px solid var(--t4); outline-offset: -1px; }
+.entrada[aria-invalid="true"] { border-color: var(--ocre); outline: 1px solid var(--ocre); outline-offset: -2px; }
+input[type="file"].entrada { padding: var(--e3); font-size: 14px; }
 .camp-mal {
-  display: flex; gap: var(--e2); align-items: flex-start;
-  margin: var(--e2) 0 0; padding: var(--e2) var(--e3);
-  background: var(--race-suau); border-radius: 3px;
-  font-size: 14px; font-weight: 650; line-height: 1.35;
-}
-.camp-mal::before {
-  content: "!"; flex: none; display: grid; place-items: center; width: 20px; height: 20px;
-  background: var(--race); color: var(--ink); font-weight: 800; font-size: 13px; border-radius: 2px;
+  margin: var(--e2) 0 0; padding: var(--e2) 0 var(--e2) var(--e3);
+  border-left: 2px solid var(--ocre); color: var(--ocre);
+  font-size: 14px; font-weight: 600; line-height: 1.4;
 }
 .camp-mal[hidden] { display: none; }
 
 /* -------------------------------------------------------- la carcassa */
 
 #vista { min-height: 60dvh; }
-.vista-capsa { padding-bottom: calc(var(--e7) + env(safe-area-inset-bottom, 0px)); }
-.envoltori { max-width: 1180px; margin: 0 auto; padding: 0 var(--gutter); }
+.vista-capsa { padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
+.envoltori { max-width: 1120px; margin: 0 auto; }
 
-/* Avisos de la part de dalt: sense cobertura, i el que falta enviar. */
 .sense-xarxa {
   position: sticky; top: 0; z-index: var(--z-avisos);
   display: flex; align-items: center; justify-content: center; gap: var(--e2);
-  padding: var(--e2) var(--gutter);
-  background: var(--ink); color: var(--tyvek);
-  font-size: 14px; font-weight: 650; text-align: center;
+  padding: var(--e2) var(--gutter); background: var(--tinta); color: var(--blanc);
+  font-size: 14px; font-weight: 500; text-align: center;
 }
 .sense-xarxa[hidden] { display: none; }
-.sense-xarxa .ic { color: var(--race); }
-#pendents { background: var(--race); color: var(--ink); }
+#pendents { background: var(--ocre-suau); color: var(--ocre); font-weight: 600; }
 
-/* La marca de versió: a la cantonada, petita, i que no destorbi. */
 .marca-versio {
   position: fixed; right: 8px; z-index: var(--z-marca); pointer-events: none;
   bottom: calc(6px + env(safe-area-inset-bottom, 0px));
-  font-size: 11px; font-weight: 600; font-stretch: 75%; letter-spacing: .04em;
-  color: var(--ink-3);
+  font-size: 11px; letter-spacing: .08em; color: var(--tinta-2); opacity: .8;
 }
 
-/* L'esquelet mentre arriba el primer dia: la forma del dorsal, sense res. */
-.marques { display: grid; gap: var(--e4); padding: var(--e4) var(--gutter); max-width: 1180px; margin: 0 auto; }
-.esquelet {
-  height: 88px; border-radius: var(--r);
-  background: var(--tyvek-2);
-  animation: respira 1.4s ease-in-out infinite;
-}
-.esquelet:first-child { height: 300px; }
-@keyframes respira { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+/* La càrrega: els filets on aniran la carena i les xifres, respirant. */
+.marques { display: grid; gap: 22px; padding: 40px var(--gutter); max-width: 1120px; margin: 0 auto; }
+.esquelet { height: 1px; background: var(--fil); animation: respira 1.4s ease-in-out infinite; }
+.esquelet:first-child { height: 120px; background: repeating-linear-gradient(to bottom, var(--t1) 0 1px, transparent 1px 11px); }
+@keyframes respira { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
 
-/* Estats de pantalla sencera: error, sense connectar. */
 .estat {
-  width: calc(100% - 2 * var(--gutter)); max-width: 440px; margin: var(--e7) auto; padding: var(--e6) var(--e4);
-  background: var(--tyvek); background-image: var(--fibra);
-  border-radius: var(--r); overflow: hidden;
-  box-shadow: 0 0 0 1px rgba(11, 11, 12, .1);
+  margin: var(--e7) var(--gutter); padding: var(--e4) 0;
+  border-top: 1px solid var(--fil-fort); border-bottom: 1px solid var(--fil);
   display: grid; gap: var(--e3); justify-items: start;
 }
-.estat::before {
-  content: ""; justify-self: stretch; height: 10px; background: var(--race);
-  margin: calc(-1 * var(--e6)) calc(-1 * var(--e4)) var(--e2);
-}
-.estat h2 { font-family: var(--display); font-weight: 800; font-size: 32px; line-height: 1; }
-.estat p { color: var(--ink-2); font-weight: 550; max-width: 40ch; overflow-wrap: anywhere; }
+.estat .ic { color: var(--ocre); }
+.estat h2 { font-size: 28px; font-weight: 600; letter-spacing: -.01em; line-height: 1.1; }
+.estat p { color: var(--tinta-2); max-width: 40ch; overflow-wrap: anywhere; }
 .estat .btn { width: 100%; }
 
-/* El brindis: la confirmació que passa sense demanar res. */
 .brindis {
   position: fixed; left: var(--gutter); right: var(--gutter);
   bottom: calc(var(--e4) + env(safe-area-inset-bottom, 0px));
   z-index: var(--z-brindis); max-width: 480px; margin: 0 auto;
   display: flex; align-items: center; gap: var(--e3);
-  padding: var(--e3) var(--e4);
-  background: var(--ink); color: var(--tyvek);
-  border-radius: var(--r-c);
-  font-size: 15px; font-weight: 650; line-height: 1.35;
-  transform: translateY(16px); opacity: 0; visibility: hidden;
-  transition: transform 260ms var(--ease-out), opacity 180ms ease, visibility 0s linear 260ms;
+  padding: var(--e3) var(--e4); background: var(--tinta); color: var(--blanc);
+  font-size: 14px; font-weight: 500; line-height: 1.4;
+  transform: translateY(12px); opacity: 0; visibility: hidden;
+  transition: transform 240ms var(--ease-out), opacity 160ms ease, visibility 0s linear 240ms;
 }
-.brindis .ic { color: var(--race); }
-.brindis[data-visible="1"] {
-  transform: none; opacity: 1; visibility: visible;
-  transition: transform 260ms var(--ease-out), opacity 180ms ease, visibility 0s;
-}
-.brindis[data-to="error"] { background: var(--race); color: var(--ink); }
-.brindis[data-to="error"] .ic { color: var(--ink); }
+.brindis .ic { color: var(--t2); }
+.brindis[data-visible="1"] { transform: none; opacity: 1; visibility: visible;
+  transition: transform 240ms var(--ease-out), opacity 160ms ease, visibility 0s; }
+.brindis[data-to="error"] { background: var(--ocre); }
+.brindis[data-to="error"] .ic { color: var(--blanc); }
 
-/* -------------------------------------------------- els fulls que pugen */
-
+/* --- els fulls que pugen --- */
 .fosc {
   position: fixed; inset: 0; z-index: var(--z-fosc);
   display: flex; align-items: flex-end; justify-content: center;
-  background: rgba(11, 11, 12, .5);
-  opacity: 0; pointer-events: none; transition: opacity 200ms ease;
+  background: rgba(13, 25, 30, .45); opacity: 0; pointer-events: none; transition: opacity 200ms ease;
 }
 .fosc[data-obert="1"] { opacity: 1; pointer-events: auto; }
 .modal {
-  width: 100%; max-width: 560px; max-height: 88dvh; overflow-y: auto;
-  overscroll-behavior: contain;
-  background: var(--tyvek); color: var(--ink);
-  border-radius: var(--r) var(--r) 0 0;
-  padding: 0 var(--e4) calc(var(--e5) + env(safe-area-inset-bottom, 0px));
+  width: 100%; max-width: 560px; max-height: 88dvh; overflow-y: auto; overscroll-behavior: contain;
+  background: var(--camp); color: var(--tinta);
+  padding: 0 var(--gutter) calc(var(--e6) + env(safe-area-inset-bottom, 0px));
   transform: translateY(100%); transition: transform 320ms var(--ease-drawer);
 }
 .fosc[data-obert="1"] .modal { transform: none; }
 .modal-cap {
   position: sticky; top: 0; z-index: 1;
   display: flex; align-items: center; gap: var(--e3);
-  margin: 0 calc(-1 * var(--e4)) var(--e4); padding: calc(var(--e3) + 8px) var(--e2) var(--e3) var(--e4);
-  background: var(--tyvek); border-bottom: 3px solid var(--ink);
-  box-shadow: inset 0 8px 0 var(--race);
+  margin: 0 calc(-1 * var(--gutter)) var(--e4); padding: var(--e3) var(--e2) var(--e2) var(--gutter);
+  background: var(--camp); border-bottom: 1px solid var(--fil-fort);
 }
-.modal-cap h2 { flex: 1; font-family: var(--display); font-weight: 800; font-size: 28px; line-height: 1; }
-@media (min-width: 900px) {
-  .fosc { align-items: center; }
-  .modal { border-radius: var(--r); max-height: 84dvh; }
-}
+.modal-cap h2 { flex: 1; font-size: 22px; font-weight: 600; letter-spacing: -.01em; }
+@media (min-width: 900px) { .fosc { align-items: center; } }
 
-/* Formularis de dins dels fulls: objectius, confirmar, importar. */
 .form-ajustos { display: grid; gap: var(--e4); }
 .form-ajustos label { display: block; }
-.form-ajustos label > span { display: block; margin-bottom: var(--e1); font-size: 14px; font-weight: 650; font-stretch: 85%; }
+.form-ajustos label > span { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta-2); }
 .form-ajustos input:not([type="file"]) {
   width: 100%; min-height: var(--toc); padding: 0 var(--e3);
-  border: 2px solid var(--ink); border-radius: 3px; background: #fff;
-  font-size: 17px; font-weight: 600;
+  border: 1px solid var(--tinta); border-radius: 0; background: var(--blanc); font-size: 16px; font-weight: 500;
 }
-.form-ajustos input:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--race); }
-.form-ajustos p { color: var(--ink-2); font-weight: 550; }
-.form-ajustos hr { margin: var(--e2) 0; }
+.form-ajustos input:focus-visible { outline: 2px solid var(--t4); outline-offset: -1px; }
+.form-ajustos p { color: var(--tinta-2); }
+.form-ajustos h3 { margin-top: var(--e2); }
 
 /* =========================================================================
    LA PANTALLA DE NUTRICIÓ
    ========================================================================= */
 
-/* --------------------------------------------- capçalera: el tauler */
-.tauler { padding-top: max(var(--e3), env(safe-area-inset-top)); }
-.tauler-dalt { display: flex; align-items: center; justify-content: space-between; gap: var(--e3); min-height: var(--toc); }
-.prova-nom {
-  font-family: var(--display); font-weight: 800; font-size: 28px; line-height: 1; letter-spacing: .01em;
-}
-.prova-nom small {
-  margin-left: var(--e2); font-family: var(--text); font-size: 13px; font-weight: 600;
-  font-stretch: 80%; letter-spacing: 0; color: var(--ink-2);
-}
-.dies { display: grid; grid-template-columns: var(--toc) 1fr var(--toc); align-items: center; gap: var(--e2); margin-top: var(--e3); }
-.fletxa {
-  width: var(--toc); height: var(--toc); display: grid; place-items: center;
-  border: 2px solid var(--ink); border-radius: var(--r-c); background: transparent; cursor: pointer;
-  transition: transform 140ms var(--ease-out), background-color 140ms ease;
-}
-.fletxa:active { transform: scale(.97); }
-.fletxa:disabled { border-color: var(--apagat); color: var(--ink-3); cursor: not-allowed; }
-.fletxa:disabled:active { transform: none; }
-@media (hover: hover) and (pointer: fine) { .fletxa:not(:disabled):hover { background: var(--tyvek); } }
-.dia-actual { text-align: center; min-width: 0; }
-.dia-actual b { display: block; font-size: 17px; font-weight: 700; line-height: 1.2; }
-.dia-actual span { display: block; font-size: 14px; color: var(--ink-2); font-weight: 600; font-stretch: 85%; }
-.a-avui {
-  display: inline-block; margin-top: 2px; min-height: 32px; padding: 0 var(--e2);
-  border: 0; background: none; cursor: pointer;
-  font-size: 14px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px;
-  position: relative;
-}
-.a-avui::before { content: ""; position: absolute; inset: -8px -4px; }  /* toc de 48 */
+/* --- capçalera --- */
+.cap { display: flex; align-items: center; justify-content: space-between; min-height: 56px;
+       padding: max(8px, env(safe-area-inset-top)) 8px 0 var(--gutter); }
+.marca { display: flex; align-items: center; gap: var(--e2); color: var(--t4); }
+.marca .ic { width: 24px; height: 24px; stroke-width: 1.5; }
+.titol { padding: 18px var(--gutter) 0; }
+.titol h1 { font-size: 28px; font-weight: 600; letter-spacing: -.01em; line-height: 1.1; }
+.titol p { margin-top: 6px; font-size: 14px; color: var(--tinta-2); }
 
-.periodes {
-  display: grid; grid-template-columns: repeat(3, 1fr); margin-top: var(--e3);
-  border: 2px solid var(--ink); border-radius: var(--r-c); overflow: hidden;
-}
+.periodes { display: flex; gap: var(--e5); margin: var(--e3) var(--gutter) 0; }
 .periodes button {
-  min-height: 44px; border: 0; border-left: 2px solid var(--ink); background: transparent;
-  font-weight: 650; font-size: 15px; cursor: pointer; transition: background-color 140ms ease;
+  min-height: var(--toc); padding: 0; border: 0; background: none; cursor: pointer;
+  font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta-2);
+  box-shadow: inset 0 -2px 0 transparent; transition: color 150ms ease, box-shadow 150ms ease;
 }
-.periodes button:first-child { border-left: 0; }
-.periodes button[aria-pressed="true"] { background: var(--ink); color: var(--tyvek); }
-.periodes button:focus-visible { outline: none; box-shadow: inset 0 0 0 3px var(--race), inset 0 0 0 5px var(--ink); }
-@media (hover: hover) and (pointer: fine) { .periodes button[aria-pressed="false"]:hover { background: var(--tyvek); } }
+.periodes button[aria-pressed="true"] { color: var(--tinta); box-shadow: inset 0 -2px 0 var(--t4); }
+@media (hover: hover) and (pointer: fine) { .periodes button:hover { color: var(--tinta); } }
 
-/* --------------------------------------------- l'avís de les notificacions */
+.dies {
+  display: flex; align-items: center; justify-content: space-between;
+  margin: var(--e2) var(--gutter) 0; border-top: 1px solid var(--fil-fort); border-bottom: 1px solid var(--fil);
+}
+.fletxa {
+  width: var(--toc); height: var(--toc); display: inline-flex; align-items: center; justify-content: center;
+  border: 0; background: none; cursor: pointer; color: var(--tinta);
+  transition: transform 120ms var(--ease-out);
+}
+.fletxa:active { transform: scale(.94); }
+.fletxa:disabled { color: #8ea2a9; cursor: not-allowed; }
+.fletxa:disabled:active { transform: none; }
+.dia-actual { display: flex; align-items: center; gap: var(--e3); min-width: 0; }
+.dia-actual > span { font-size: 14px; font-weight: 600; }
+.a-avui { min-height: var(--toc); padding: 0 2px; border: 0; background: none; cursor: pointer;
+          font-size: 14px; font-weight: 600; color: var(--t4); text-decoration: underline; text-underline-offset: 3px; }
+
+/* --- el reclam dels avisos --- */
 .crida-avisos {
-  display: flex; align-items: center; gap: var(--e3);
-  margin-top: var(--e4); padding: 6px 6px 6px var(--e3);
-  background: var(--ink); color: var(--tyvek); border-radius: var(--r-c);
+  display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center;
+  margin: var(--e5) var(--gutter) 0; padding: 14px 0;
+  border-top: 1px solid var(--fil-fort); border-bottom: 1px solid var(--fil);
 }
-.crida-avisos .ic { color: var(--race); }
-.crida-avisos p { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; line-height: 1.35; }
-.crida-avisos .btn { min-height: 44px; padding: 0 var(--e4); }
-details.crida-avisos { display: block; padding: 0; }
-details.crida-avisos summary {
-  display: flex; align-items: center; gap: var(--e3); min-height: 44px; padding: 0 var(--e3);
-  cursor: pointer; list-style: none; font-size: 14px; font-weight: 650;
-}
-details.crida-avisos summary::-webkit-details-marker { display: none; }
-details.crida-avisos summary::after { content: "+"; margin-left: auto; font-weight: 800; font-size: 18px; }
-details.crida-avisos[open] summary::after { content: "−"; }
-details.crida-avisos p { padding: 0 var(--e3) var(--e3); color: #d7dce0; font-weight: 550; }
+.crida-avisos .ic { display: none; }
+.crida-avisos p { font-size: 14px; color: var(--tinta-2); }
+.crida-avisos .btn { grid-column: 2; }
 
-/* --------------------------------------------- disposició */
-.curs { display: grid; gap: var(--e5); margin-top: var(--e4); }
-.columna { display: grid; gap: var(--e5); align-content: start; min-width: 0; }
+/* --- disposició --- */
+.curs { display: grid; }
+.columna { display: grid; align-content: start; min-width: 0; }
 
-/* --------------------------------------------- EL DORSAL */
-.dorsal {
-  position: relative; overflow: hidden;
-  background-color: var(--tyvek); background-image: var(--fibra);
-  border-radius: var(--r); box-shadow: 0 0 0 1px rgba(11, 11, 12, .1);
-}
-.dorsal-franja {
-  display: flex; justify-content: space-between; align-items: center; gap: var(--e2);
-  padding: 9px 32px 8px; background: var(--race); color: var(--ink);
-  font-weight: 700; font-size: 14px; font-stretch: 80%; letter-spacing: .02em;
-}
-.imperdible {
-  position: absolute; z-index: 2; width: 11px; height: 11px; border-radius: 50%;
-  background: var(--page);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .45), 0 0 0 2.5px rgba(255, 255, 255, .75), 0 0 0 3.5px rgba(11, 11, 12, .18);
-}
-.imperdible.ae { top: 11px; left: 11px; } .imperdible.ad { top: 11px; right: 11px; }
-.imperdible.be { bottom: 8px; left: 11px; } .imperdible.bd { bottom: 8px; right: 11px; }
-.dorsal-cos { padding: var(--e2) var(--e4) 0; }
-.dorsal-num {
-  margin-top: var(--e3); text-align: center;
-  font-family: var(--display); font-weight: 900; line-height: .82; letter-spacing: -.01em;
-  font-size: clamp(96px, 31vw, 168px); font-variant-numeric: tabular-nums;
-  overflow-wrap: normal; white-space: nowrap;
-}
-.dorsal-num[data-buit] { color: var(--apagat); }
-.dorsal-cat { margin-top: var(--e2); text-align: center; }
-.dorsal-cat span {
-  display: inline-block; padding: 2px 8px; border: 2px solid var(--ink); border-radius: 3px;
-  font-weight: 700; font-size: 15px; font-stretch: 80%; letter-spacing: .06em;
-}
-.dorsal-cat[data-buit] span { border-style: dashed; color: var(--ink-2); }
+/* --- el veredicte i el pols --- */
+.veredicte { padding: 30px var(--gutter) 0; }
+.veredicte .v { margin-top: var(--e2); font-size: 36px; font-weight: 600; letter-spacing: -.02em; line-height: 1.05; }
+.veredicte .v[data-estat="superavit"] { color: var(--ocre); }
+.veredicte .v[data-estat="sense_dades"] { color: var(--tinta-2); }
+.pols { display: block; width: 100%; height: auto; margin-top: 14px; overflow: visible; }
+.pols .r { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.pols .f { fill: var(--camp); }
+.pols text { font-family: var(--font); font-size: 12px; font-weight: 600; letter-spacing: .1em; fill: var(--tinta); }
+.pols text.suau { fill: var(--tinta-2); }
+.pols .cp { stroke: var(--t4); stroke-width: 1; stroke-dasharray: 2 4; }
+.pols .zero { stroke: var(--tinta); stroke-width: 1; }
+.pols-llegenda { display: flex; justify-content: space-between; margin-top: 6px; }
 
-/* El recorregut: posició respecte de l'equilibri, mai un dipòsit. */
-.recorregut { margin-top: var(--e5); padding: 0 2px; }
-.recorregut-caps { display: flex; justify-content: space-between; font-size: 14px; font-weight: 650; font-stretch: 80%; color: var(--ink-2); }
-.pista { position: relative; height: 96px; margin-top: 2px; }
-.pista .linia { position: absolute; left: 0; right: 0; top: 46px; height: 3px; background: var(--ink); }
-.pista .marques-km {
-  position: absolute; left: 0; right: 0; top: 40px; height: 15px;
-  background: repeating-linear-gradient(to right, var(--ink) 0 1px, transparent 1px 12.5%);
-}
-.pista .marques-km::after { content: ""; position: absolute; right: 0; top: 0; width: 1px; height: 100%; background: var(--ink); }
-.pista[data-buit] .linia { background: repeating-linear-gradient(90deg, var(--apagat) 0 8px, transparent 8px 13px); }
-.pista[data-buit] .marques-km { opacity: .35; }
-.sortida {
-  position: absolute; left: 50%; top: 24px; width: 18px; height: 40px; transform: translateX(-50%);
-  border: 3px solid var(--ink); border-bottom: 0; border-radius: 2px 2px 0 0;
-}
-.sortida-txt {
-  position: absolute; right: calc(50% + 14px); top: 62px;
-  font-size: 14px; font-weight: 650; font-stretch: 85%; text-align: right; line-height: 1.15;
-}
-.cp { position: absolute; left: var(--cp, 62.5%); top: 20px; width: 2px; height: 28px; background: var(--ink); }
-.cp::after {
-  content: ""; position: absolute; left: 2px; top: 0; width: 18px; height: 13px;
-  background: var(--race); clip-path: polygon(0 0, 100% 50%, 0 100%);
-}
-.cp-txt {
-  position: absolute; left: calc(var(--cp, 62.5%) - 2px); top: 62px;
-  font-size: 14px; font-weight: 650; font-stretch: 85%; line-height: 1.15; white-space: nowrap;
-}
-/* El text del CP, quan queda a la dreta, s'obre cap a dins per no sortir del dorsal. */
-.pista[data-cp-dreta] .cp-txt { transform: translateX(-100%); left: calc(var(--cp, 62.5%) + 2px); text-align: right; }
-/* La bandereta mira a l'altra banda quan el corredor la passa de prop. */
-.pista[data-cp-gira] .cp::after { left: auto; right: 2px; clip-path: polygon(100% 0, 0 50%, 100% 100%); }
-.cp-txt b { display: block; font-weight: 800; }
-.carril { position: absolute; inset: 0; transform: translateX(var(--x, 0%)); pointer-events: none; }
-.carril.surt { animation: surt 600ms var(--ease-out) 160ms both; }
-@keyframes surt { from { transform: translateX(0); } }
-.corredor { position: absolute; left: 50%; top: 0; width: 0; height: 0; }
-.corredor .etiqueta {
-  position: absolute; left: 0; top: 0; transform: translateX(-50%);
-  padding: 2px 6px; border-radius: 2px; background: var(--ink); color: var(--tyvek);
-  font-size: 13px; font-weight: 700; font-stretch: 85%; white-space: nowrap;
-}
-.corredor .tija { position: absolute; left: -1px; top: 21px; width: 2px; height: 20px; background: var(--ink); }
-.corredor .punt {
-  position: absolute; left: -9px; top: 38px; width: 18px; height: 18px; border-radius: 50%;
-  background: var(--race); border: 3px solid var(--ink);
-}
-/* L'etiqueta no pot sortir del dorsal per les vores. */
-.carril[data-vora="dreta"] .etiqueta { transform: translateX(-85%); }
-.carril[data-vora="esquerra"] .etiqueta { transform: translateX(-15%); }
+/* --- les quatre xifres --- */
+.xifres { display: grid; grid-template-columns: 1fr 1fr; margin: var(--e6) var(--gutter) 0; border-top: 1px solid var(--fil-fort); }
+.xifra { min-width: 0; padding: 14px 0 16px; border-bottom: 1px solid var(--fil); }
+.xifra:nth-child(odd) { padding-right: var(--e3); border-right: 1px solid var(--fil); }
+.xifra:nth-child(even) { padding-left: var(--e4); }
+.xifra .gran { display: flex; align-items: baseline; gap: 5px; margin-top: 6px; white-space: nowrap; }
+.xifra .n { font-size: 40px; font-weight: 500; letter-spacing: -.03em; line-height: 1; }
+.xifra .u { font-size: 15px; font-weight: 500; color: var(--tinta-2); }
+.xifra .d { margin-top: 6px; font-size: 14px; color: var(--tinta-2); }
+.xifra .d[data-fet] { color: var(--t4); font-weight: 600; }
+.xifra .d[data-avis] { color: var(--ocre); font-weight: 600; }
 
-/* La fila de dades del dorsal. */
-.dorsal-dades {
-  display: grid; grid-template-columns: 1fr 1.3fr 1fr;
-  margin: var(--e1) calc(-1 * var(--e4)) 0; border-top: 2px solid var(--ink);
-}
-.dorsal-dades > div { min-width: 0; padding: var(--e3) 10px 14px; border-left: 1px solid var(--hair); }
-.dorsal-dades > div:first-child { border-left: 0; padding-left: var(--e4); }
-.dorsal-dades dt { font-size: 14px; font-weight: 650; font-stretch: 85%; color: var(--ink-2); letter-spacing: .02em; }
-.dorsal-dades dd { margin-top: var(--e1); font-family: var(--display); font-weight: 800; font-size: 30px; line-height: 1; white-space: nowrap; }
-.dorsal-dades dd small { margin-left: 2px; font-family: var(--text); font-size: 13px; font-weight: 600; }
-.dorsal-dades .de { font-family: var(--text); font-size: 15px; font-weight: 600; color: var(--ink-2); }
-.dorsal-dades .parcial { margin-top: var(--e1); font-family: var(--text); font-size: 14px; font-weight: 600; color: var(--ink-2); line-height: 1.25; white-space: normal; }
-.dorsal-dades .parcial[data-fet] { color: var(--ink); font-weight: 750; }
+/* --- seccions amb regla --- */
+.sec { padding: 28px var(--gutter) 0; }
+.sec-cap { display: flex; justify-content: space-between; align-items: baseline; gap: var(--e3);
+           padding-bottom: 10px; border-bottom: 1px solid var(--fil-fort); }
+.sec-cap h2 { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta); }
 
-/* El xip de cronometratge, amb el dia gravat. */
-.xip {
-  display: flex; align-items: center; gap: 10px; height: 30px; padding: 0 32px;
-  border-top: 1px solid var(--hair); background: var(--tyvek-2);
-}
-.xip-barres {
-  flex: 1; height: 12px;
-  background: repeating-linear-gradient(90deg, var(--ink) 0 2px, transparent 2px 4px, var(--ink) 4px 5px, transparent 5px 8px, var(--ink) 8px 11px, transparent 11px 12px, var(--ink) 12px 13px, transparent 13px 17px);
-}
-.xip-codi { font-size: 12px; font-weight: 650; font-stretch: 75%; letter-spacing: .08em; color: var(--ink-2); }
-
-/* --------------------------------------------- blocs: full, meta, classificació */
-.full {
-  overflow: hidden; background: var(--tyvek); border-radius: var(--r);
-  box-shadow: 0 0 0 1px rgba(11, 11, 12, .1);
-}
-.full-cap {
-  display: flex; justify-content: space-between; align-items: baseline; gap: var(--e3);
-  padding: 14px var(--e4) var(--e3); border-bottom: 3px solid var(--ink);
-}
-.full-cap h2 { font-family: var(--display); font-weight: 800; font-size: 32px; line-height: 1; }
-.full-cap p { font-size: 14px; font-weight: 600; font-stretch: 85%; color: var(--ink-2); text-align: right; line-height: 1.3; }
-.capcol {
-  display: grid; grid-template-columns: 1fr auto var(--toc); gap: 10px;
-  padding: 6px var(--e2) 6px var(--e4); border-bottom: 1px solid var(--hair);
-  font-size: 14px; font-weight: 650; font-stretch: 85%; color: var(--ink-2);
-}
-
-/* Un àpat = un parcial del full. */
-.apat + .apat { border-top: 3px solid var(--ink); }
-.apat-cap {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  padding: 10px var(--e4); background: var(--ink); color: var(--tyvek);
-}
-.apat-cap h3 { display: flex; align-items: baseline; gap: 10px; font-family: var(--display); font-weight: 800; font-size: 26px; line-height: 1; }
-.apat-cap .pk {
-  padding: 2px 5px; border-radius: 2px; background: var(--race); color: var(--ink);
-  font-family: var(--text); font-size: 12px; font-weight: 700; font-stretch: 80%; letter-spacing: .04em;
-}
-.apat-tot { font-weight: 700; font-size: 15px; white-space: nowrap; }
-.apat-tot[data-buit] { color: #aab2b9; font-weight: 600; }
-
-.ingesta {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto var(--toc); gap: 10px; align-items: center;
-  padding: 10px var(--e2) 10px var(--e4); border-bottom: 1px solid var(--hair);
-}
-.ingesta-nom { font-weight: 650; font-size: 16px; line-height: 1.25; overflow-wrap: anywhere; }
-.ingesta-espec { display: flex; flex-wrap: wrap; gap: 2px 12px; margin-top: 2px; font-size: 14px; color: var(--ink-2); font-stretch: 85%; font-weight: 550; }
-.ingesta-surt { text-align: right; line-height: 1.2; white-space: nowrap; }
-.ingesta-surt .k { font-family: var(--display); font-weight: 800; font-size: 24px; }
-.ingesta-surt .ku { margin-left: 2px; font-size: 14px; font-weight: 600; }
-.ingesta-surt .p { display: block; font-size: 14px; font-weight: 600; color: var(--ink-2); }
-.treu {
-  width: var(--toc); height: var(--toc); display: grid; place-items: center;
-  border: 0; border-radius: var(--r-c); background: transparent; cursor: pointer;
-  transition: transform 140ms var(--ease-out), background-color 140ms ease;
-}
-.treu:active { transform: scale(.97); }
-@media (hover: hover) and (pointer: fine) { .treu:hover { background: var(--tyvek-2); } }
-.apat-buit { padding: var(--e3) var(--e4); font-size: 14px; color: var(--ink-2); font-weight: 550; border-bottom: 1px solid var(--hair); }
-
-.obre-form { width: calc(100% - 2 * var(--e4)); margin: var(--e3) var(--e4) 14px; justify-content: flex-start; }
+/* --- els àpats: un parcial cada un --- */
+.apat + .apat { margin-top: var(--e2); }
+.apat-cap { display: flex; justify-content: space-between; align-items: baseline; gap: var(--e3);
+            padding: 14px 0 6px; border-bottom: 1px solid var(--fil); }
+.apat-cap h3 { font-size: 17px; font-weight: 600; letter-spacing: -.005em; display: flex; align-items: baseline; gap: 10px; }
+.apat-tot { font-size: 14px; font-weight: 600; white-space: nowrap; }
+.apat-tot[data-buit] { color: var(--tinta-2); font-weight: 500; }
+.ingesta { display: grid; grid-template-columns: minmax(0, 1fr) auto var(--toc); gap: 2px 10px; align-items: center;
+           min-height: 56px; padding: 10px 0; border-bottom: 1px solid var(--fil); }
+.ingesta-nom { font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
+.ingesta-espec { margin-top: 2px; font-size: 13px; color: var(--tinta-2); }
+.ingesta-espec span + span::before { content: " · "; }
+.ingesta-surt { text-align: right; line-height: 1.2; white-space: nowrap; font-size: 15px; font-weight: 600; }
+.ingesta-surt .ku { margin-left: 2px; font-size: 13px; font-weight: 500; color: var(--tinta-2); }
+.ingesta-surt .p { display: block; font-size: 13px; font-weight: 500; color: var(--tinta-2); }
+.treu { width: var(--toc); height: var(--toc); display: grid; place-items: center; margin-right: -12px;
+        border: 0; background: none; cursor: pointer; color: var(--tinta-2);
+        transition: transform 120ms var(--ease-out), color 150ms ease; }
+.treu:active { transform: scale(.94); }
+@media (hover: hover) and (pointer: fine) { .treu:hover { color: var(--tinta); } }
+.apat-buit { padding: 12px 0; font-size: 14px; color: var(--tinta-2); border-bottom: 1px solid var(--fil); }
+.obre-form { margin-top: var(--e3); }
 .obre-form[aria-expanded="true"] { display: none; }
 
-/* El formulari d'inscripció: on s'apunta. */
-.inscripcio { margin: var(--e3) var(--e4) var(--e4); border: 2px solid var(--ink); border-radius: var(--r-c); background: var(--tyvek); overflow: hidden; }
+.inscripcio { margin-top: var(--e3); padding: var(--e3) 0 var(--e4); border-top: 1px solid var(--fil-fort); border-bottom: 1px solid var(--fil); }
 .inscripcio[hidden] { display: none; }
-.inscripcio-franja {
-  display: flex; justify-content: space-between; align-items: center; gap: var(--e2);
-  padding: var(--e2) var(--e3); background: var(--race); font-weight: 750; font-size: 15px; font-stretch: 85%;
-}
-.inscripcio-franja button {
-  min-height: 44px; margin: -8px -8px -8px 0; padding: 0 10px; border: 0; background: transparent; cursor: pointer;
-  font-weight: 700; font-size: 14px; text-decoration: underline; text-underline-offset: 3px;
-}
-.inscripcio-cos { display: grid; gap: var(--e3); padding: var(--e3); }
-.tria { width: 100%; justify-content: space-between; }
+.inscripcio-franja { display: flex; justify-content: space-between; align-items: center; gap: var(--e2); margin-bottom: var(--e2); }
+.inscripcio-franja span { font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta); }
+.inscripcio-franja button { min-height: var(--toc); margin: -8px 0; padding: 0 2px; border: 0; background: none; cursor: pointer;
+                            font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.inscripcio-cos { display: grid; gap: var(--e3); }
+.tria { justify-content: space-between; }
 .trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--e2); }
 .inscripcio label { display: block; }
-.inscripcio label > span { display: block; margin-bottom: var(--e1); font-size: 13px; font-weight: 650; font-stretch: 85%; }
-.inscripcio input {
-  width: 100%; min-height: var(--toc); padding: 0 var(--e3);
-  border: 2px solid var(--ink); border-radius: 3px; background: #fff; font-size: 17px; font-weight: 600;
-}
-.inscripcio input:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--race); }
-.inscripcio input[aria-invalid="true"] { border-color: var(--race); box-shadow: inset 4px 0 0 var(--race); }
+.inscripcio label > span { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--tinta-2); }
+.inscripcio input { width: 100%; min-height: var(--toc); padding: 0 var(--e3); border: 1px solid var(--tinta); border-radius: 0;
+                    background: var(--blanc); font-size: 16px; font-weight: 500; }
+.inscripcio input:focus-visible { outline: 2px solid var(--t4); outline-offset: -1px; }
+.inscripcio input[aria-invalid="true"] { border-color: var(--ocre); outline: 1px solid var(--ocre); outline-offset: -2px; }
 .inscripcio-accions { display: grid; gap: var(--e2); }
-.inscripcio-accions .btn-primari { font-size: 17px; }
 
-/* --------------------------------------------- la meta: tancament del dia */
-.escacs {
-  height: 14px;
-  background: conic-gradient(var(--ink) 25%, var(--tyvek) 0 50%, var(--ink) 0 75%, var(--tyvek) 0) 0 0 / 14px 14px;
-}
-.meta-cos { display: grid; gap: var(--e3); padding: 0 var(--e4) var(--e4); }
-.meta .full-cap { border-bottom: 0; padding-bottom: var(--e2); }
-.cremades { display: grid; grid-template-columns: 1fr auto; border: 2px solid var(--ink); border-radius: 3px; background: #fff; }
-.cremades:focus-within { box-shadow: 0 0 0 3px var(--race); }
-.cremades input {
-  width: 100%; min-width: 0; min-height: 56px; padding: 0 var(--e3); border: 0; background: transparent;
-  font-family: var(--display); font-weight: 800; font-size: 32px;
-}
-.cremades input::placeholder { color: var(--apagat); }
-.cremades input:focus-visible { outline: none; box-shadow: none; }
-.cremades span { display: grid; place-items: center; padding: 0 var(--e3); border-left: 2px solid var(--ink); font-weight: 700; font-size: 15px; }
-.compte { font-size: 14px; color: var(--ink-2); font-weight: 550; }
-.veredicte {
-  display: flex; gap: 10px; align-items: flex-start;
-  padding-top: var(--e3); border-top: 3px solid var(--ink);
-  font-weight: 750; font-size: 18px; line-height: 1.3;
-}
-.veredicte .senyal { flex: none; width: 22px; height: 22px; margin-top: 2px; border-radius: 50%; background: var(--race); border: 3px solid var(--ink); }
-.veredicte[data-estat="sense_dades"] .senyal { background: transparent; border-style: dashed; }
-.veredicte[data-estat="superavit"] .senyal { background: var(--ink); }
-.veredicte[data-estat="deficit"] .senyal { background: var(--tyvek); }
+/* --- el tancament --- */
+.meta-cos { display: grid; gap: var(--e3); padding-top: var(--e3); }
+.cremades { display: grid; grid-template-columns: 1fr auto; border: 1px solid var(--tinta); background: var(--blanc); }
+.cremades:focus-within { outline: 2px solid var(--t4); outline-offset: -1px; }
+.cremades input { width: 100%; min-width: 0; min-height: 56px; padding: 0 var(--e3); border: 0; background: transparent;
+                  font-size: 32px; font-weight: 500; letter-spacing: -.02em; }
+.cremades input:focus-visible { outline: none; }
+.cremades input::placeholder { color: var(--fil); }
+.cremades span { display: grid; place-items: center; padding: 0 var(--e3); border-left: 1px solid var(--fil);
+                 font-size: 14px; font-weight: 500; color: var(--tinta-2); }
+.compte { font-size: 14px; color: var(--tinta-2); }
+.veredicte-linia { padding-top: var(--e3); border-top: 1px solid var(--fil); font-size: 17px; font-weight: 600; line-height: 1.35; }
+.veredicte-linia[data-estat="superavit"] { color: var(--ocre); }
+.veredicte-linia[data-estat="sense_dades"] { color: var(--tinta-2); font-weight: 500; }
 
-/* --------------------------------------------- la classificació: setmana */
-.classif { width: 100%; border-collapse: collapse; }
-.classif th, .classif td { padding: 0; border-bottom: 1px solid var(--hair); vertical-align: middle; }
-.classif thead th { padding: 6px 0; font-size: 14px; font-weight: 650; font-stretch: 80%; color: var(--ink-2); text-align: left; }
-.classif thead th:first-child { padding-left: var(--e4); }
-.classif thead th:last-child { padding-right: var(--e4); text-align: right; }
-.classif tbody th { width: 64px; padding: 0 0 0 var(--e4); text-align: left; font-weight: 700; font-size: 15px; white-space: nowrap; }
-.classif tbody th small { display: block; font-size: 12px; font-weight: 600; color: var(--ink-2); }
-.classif td.xifra-dia { width: 108px; padding: var(--e2) var(--e4) var(--e2) var(--e2); text-align: right; line-height: 1.15; }
-.classif .n { font-family: var(--display); font-weight: 800; font-size: 24px; }
-.classif .s { display: block; font-size: 14px; font-weight: 600; font-stretch: 85%; color: var(--ink-2); }
-.classif tr.avui { background: var(--tyvek-2); }
-.classif tr.avui th { box-shadow: inset 4px 0 0 var(--race); }
-.classif tbody tr { position: relative; }
-.anar-dia {
-  display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
-  min-height: 56px; padding: 0; border: 0; background: none; color: inherit; cursor: pointer;
-  font: inherit; font-weight: 700; font-size: 15px; text-align: left;
+/* --- els dies del període: files de catàleg --- */
+.fila {
+  width: 100%; display: grid; grid-template-columns: 86px 1fr auto; align-items: center; gap: 10px;
+  min-height: 56px; padding: 8px 0; border: 0; border-bottom: 1px solid var(--fil); background: none;
+  text-align: left; cursor: pointer; position: relative; transition: background-color 150ms ease;
 }
-.anar-dia::after { content: ""; position: absolute; inset: 0; }
-.anar-dia:focus-visible { outline: none; box-shadow: none; }
-.anar-dia:focus-visible::after { outline: 2px solid var(--ink); outline-offset: -2px; box-shadow: inset 0 0 0 5px var(--race); }
-@media (hover: hover) and (pointer: fine) { .classif tbody tr:hover { background: var(--tyvek-2); } }
-.dns {
-  display: inline-block; padding: 0 5px; border: 2px solid var(--ink); border-radius: 2px;
-  font-size: 13px; font-weight: 800; letter-spacing: .06em;
-}
-.mini { position: relative; height: 30px; margin: 0 var(--e1); }
-.mini::before { content: ""; position: absolute; left: 0; right: 0; top: 14px; height: 2px; background: var(--ink); }
-.mini .s0 { position: absolute; left: 50%; top: 6px; width: 2px; height: 18px; margin-left: -1px; background: var(--ink); }
-.mini .c { position: absolute; left: var(--cp, 62.5%); top: 4px; width: 2px; height: 12px; background: var(--ink); }
-.mini .c::after { content: ""; position: absolute; left: 2px; top: 0; width: 8px; height: 7px; background: var(--race); clip-path: polygon(0 0, 100% 50%, 0 100%); }
-.mini .d { position: absolute; top: 9px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--ink); border: 2px solid var(--ink); }
-.mini .d[data-curt] { background: var(--tyvek); }
-.mini .d[data-sobre] { background: var(--race); }
-.mini[data-buit]::before { background: repeating-linear-gradient(90deg, var(--apagat) 0 6px, transparent 6px 10px); }
-.mini[data-buit] .s0 { background: var(--apagat); }
+@media (hover: hover) and (pointer: fine) { .fila:hover { background: var(--camp-alt); } }
+.fila .cat { font-size: 12px; font-weight: 600; letter-spacing: .12em; color: var(--tinta-2); line-height: 1.3; }
+.fila .cat b { display: block; color: var(--tinta); font-weight: 600; letter-spacing: .04em; font-size: 14px; text-transform: none; }
+.fila-v { font-size: 15px; }
+.fila-v[data-avis] { color: var(--ocre); font-weight: 600; }
+.fila-v[data-buit] { color: var(--tinta-2); }
+.fila .val { font-size: 15px; font-weight: 600; text-align: right; }
+.fila[aria-current="true"] { background: var(--blanc); }
+.fila[aria-current="true"]::before { content: ""; position: absolute; left: -16px; top: -1px; bottom: -1px; width: 3px; background: var(--t4); }
+.tots { display: flex; justify-content: center; padding: var(--e3) 0 0; }
+.resum { padding: 14px 0 0; font-size: 14px; color: var(--tinta-2); display: grid; gap: 2px; }
+.resum b { color: var(--tinta); font-weight: 600; }
+.buit-periode { padding: 14px 0; font-size: 14px; color: var(--tinta-2); border-bottom: 1px solid var(--fil); }
 
-/* El mes: el perfil de la cursa. Amunt dèficit, avall superàvit. */
-.perfil { padding: var(--e4); }
-.perfil-caixa { position: relative; height: 180px; border-left: 2px solid var(--ink); }
-.perfil-caixa::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; background: var(--ink); }
-.perfil-cp { position: absolute; left: 0; right: 0; height: 0; border-top: 2px dashed var(--race); }
-.perfil-llegenda { display: inline-flex; align-items: center; gap: 6px; color: var(--ink); }
-.perfil-llegenda::before { content: ""; width: 18px; border-top: 2px dashed var(--race); }
-.perfil-dia {
-  position: absolute; top: 0; bottom: 0; padding: 0; border: 0; background: transparent; cursor: pointer;
-}
-.perfil-dia i { position: absolute; left: 14%; width: 72%; display: block; background: var(--ink); }
-.perfil-dia:focus-visible { outline: 2px solid var(--ink); outline-offset: 0; box-shadow: inset 0 0 0 3px var(--race); }
-@media (hover: hover) and (pointer: fine) { .perfil-dia:hover { background: rgba(11, 11, 12, .06); } }
-.perfil-dia i[data-costat="superavit"] { background: var(--race); }
-.perfil-eix { position: relative; height: 20px; margin-left: 2px; }
-.perfil-eix span { position: absolute; transform: translateX(-50%); font-size: 14px; font-weight: 650; color: var(--ink-2); }
-.perfil-peu { display: flex; justify-content: space-between; margin-top: var(--e2); font-size: 14px; font-weight: 650; font-stretch: 85%; color: var(--ink-2); }
-
-.resum { display: grid; gap: var(--e1); padding: var(--e3) var(--e4) var(--e4); font-size: 15px; line-height: 1.45; }
-.resum b { font-weight: 750; }
-.buit-periode { padding: var(--e5) var(--e4); color: var(--ink-2); font-weight: 550; }
-
-/* El dorsal del període: mitjanes en comptes del dia. */
-.dorsal[data-periode] .dorsal-num { font-size: clamp(84px, 26vw, 140px); }
-
-/* --------------------------------------------- el rebost */
-.rebost-llista { max-height: 52dvh; overflow-y: auto; overscroll-behavior: contain; border-top: 2px solid var(--ink); margin-top: var(--e3); }
-.aliment-fila {
-  width: 100%; min-height: 56px; display: flex; justify-content: space-between; align-items: center; gap: var(--e3);
-  padding: var(--e2) var(--e1); border: 0; border-bottom: 1px solid var(--hair); background: transparent;
-  text-align: left; cursor: pointer; font-size: 16px; font-weight: 650;
-}
-.aliment-fila .aliment-dades { flex: none; font-size: 14px; font-weight: 600; color: var(--ink-2); white-space: nowrap; }
+/* --- el rebost --- */
+.rebost-llista { max-height: 52dvh; overflow-y: auto; overscroll-behavior: contain; margin-top: var(--e3); border-top: 1px solid var(--fil-fort); }
+.aliment-fila { width: 100%; min-height: 56px; display: flex; justify-content: space-between; align-items: center; gap: var(--e3);
+                padding: var(--e2) 0; border: 0; border-bottom: 1px solid var(--fil); background: none; text-align: left; cursor: pointer;
+                font-size: 15px; font-weight: 600; }
 .aliment-fila .aliment-nom { min-width: 0; overflow-wrap: anywhere; }
-@media (hover: hover) and (pointer: fine) { .aliment-fila:hover { background: var(--tyvek-2); } }
-.rebost-buit { padding: var(--e4) var(--e1); color: var(--ink-2); font-weight: 550; }
+.aliment-fila .aliment-dades { flex: none; font-size: 13px; font-weight: 500; color: var(--tinta-2); white-space: nowrap; }
+@media (hover: hover) and (pointer: fine) { .aliment-fila:hover { background: var(--camp-alt); } }
+.rebost-buit { padding: var(--e4) 0; color: var(--tinta-2); }
 
-/* El que ha trobat l'importador abans d'escriure res. */
-.assaig { padding: var(--e3) var(--e4); border: 2px solid var(--ink); border-radius: var(--r-c); display: grid; gap: var(--e2); }
-.assaig[data-avis] { border-color: var(--race); box-shadow: inset 6px 0 0 var(--race); }
+.assaig { padding: var(--e3) 0; border-top: 1px solid var(--fil-fort); border-bottom: 1px solid var(--fil); display: grid; gap: var(--e2); }
+.assaig[data-avis] { border-top-color: var(--ocre); }
+.assaig[data-avis] p { color: var(--ocre); font-weight: 600; }
 
-/* --------------------------------------------- escriptori */
+/* --- escriptori: el pols a l'esquerra, el full a la dreta --- */
 @media (min-width: 900px) {
   :root { --gutter: 28px; }
-  .tauler { display: grid; grid-template-columns: auto minmax(0, 1fr) 300px auto; align-items: center; gap: var(--e5); padding-top: 18px; }
-  .tauler-dalt { display: contents; }
-  .tauler-dalt .prova-nom { order: 0; }
-  .dies { order: 1; margin: 0; width: 100%; max-width: 440px; justify-self: center; }
-  .periodes { order: 2; margin: 0; }
-  .tauler-dalt .btn { order: 3; }
-  .curs { grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); gap: 28px; align-items: start; }
-  /* El dorsal no se'n va: mentre passes els àpats, el balanç es queda a la vista. */
-  .curs > .columna:first-child { position: sticky; top: var(--e4); }
+  .curs { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); column-gap: 28px; align-items: start; }
+  .curs > .columna:first-child { position: sticky; top: 0; }
 }
 
-/* --------------------------------------------- moviment reduït */
 @media (prefers-reduced-motion: reduce) {
-  .carril.surt { animation: none; }
-  .esquelet { animation: none; }
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
   .btn:active, .fletxa:active, .treu:active { transform: none; }
-  .modal, .brindis, .fosc { transition-duration: 0s; }
-  .btn[data-carregant="1"]::after { animation-duration: 1.6s; }
 }
 </style>

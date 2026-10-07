@@ -1,14 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Nutrició">
   <title>Nutrició</title>
   <!--
-    LA SIGLA. Una N de dorsal, condensada i blanca sobre tinta, amb la
-    bandereta taronja del punt de control a l'espatlla i la línia de meta a
-    sota. A la pantalla d'inici es reconeix pel contrast: és la única icona
-    negra amb una sola taca de taronja.
-    El fons va a sang: el sistema hi posa la forma que vulgui.
+    LA SIGLA, EN ECOS. La N de Nutrició dibuixada com les carenes de l'app
+    del cos: la d'ara davant, fosca i gruixuda, i darrere les d'abans, més
+    grans i més clares, que s'allunyen. La mateixa rampa de turquesa, el mateix
+    camp pàl·lid, la mateixa quadrícula tènue i la mateixa línia de base: les
+    dues icones es reconeixen germanes a la pantalla d'inici.
+    El fons va a sang; la forma del retall la posa el mòbil.
   -->
-  <rect width="512" height="512" fill="#0b0b0c"/>
-  <path d="M118 420V92h74l96 196V92h66v328h-74l-96-196v196z" fill="#fbfcfd"/>
-  <path d="M354 92l88 38-88 38z" fill="#ff5a1f"/>
-  <path d="M60 446h392" stroke="#ff5a1f" stroke-width="10"/>
+  <rect width="512" height="512" fill="#e8eef0"/>
+  <g stroke="#086674" stroke-width="2" opacity=".14"><path d="M0 128h512M0 256h512M0 384h512M128 0v512M256 0v512M384 0v512"/></g>
+  <g fill="none" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M109 395.2 L109 97 L403 395.2 L403 97" stroke="#bcced4" stroke-width="8"/>
+    <path d="M133 395.2 L133 123 L379 395.2 L379 123" stroke="#7ab5c1" stroke-width="9"/>
+    <path d="M157 395.2 L157 149 L355 395.2 L355 149" stroke="#1c8496" stroke-width="10"/>
+    <path d="M181 395.2 L181 175 L331 395.2 L331 175" stroke="#054a57" stroke-width="18"/>
+  </g>
+  <path d="M39.4 395.2H472.6" stroke="#0d191e" stroke-width="12"/>
 </svg>

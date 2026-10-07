@@ -22,7 +22,7 @@
    «tot el que no sigui meu», cada app que s'actualitzés buidaria la de les
    altres. */
 var PREFIX = 'nutricio-';
-var CAU = PREFIX + 'v7';   // v7: l'app passa a poldpm-apps.github.io
+var CAU = PREFIX + 'v8';   // v8: el pols, germana de l'app del cos
 var ESSENCIALS = [
   './',
   './index.html',
@@ -30,8 +30,7 @@ var ESSENCIALS = [
   './icona-192.png',
   './favicon.svg',
   './manifest.webmanifest',
-  './fonts/big-shoulders-display.woff2',
-  './fonts/archivo.woff2'
+  './fonts/hanken-grotesk.woff2'
 ];
 
 self.addEventListener('install', function (ev) {

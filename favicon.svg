@@ -1,7 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Nutrició">
   <title>Nutrició</title>
-  <!-- A 16 px només sobreviuen la N i la bandereta: la línia de meta se'n va. -->
-  <rect width="64" height="64" rx="10" fill="#0b0b0c"/>
-  <path d="M12 54V10h10l13 27V10h9v44H34L21 27v27z" fill="#fbfcfd"/>
-  <path d="M44 10l14 6-14 6z" fill="#ff5a1f"/>
+  <!-- A 16 px només hi caben dos ecos i la línia de base. -->
+  <rect width="64" height="64" rx="10" fill="#e8eef0"/>
+  <g fill="none" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M14 52V13L50 52V13" stroke="#7ab5c1" stroke-width="2.4"/>
+    <path d="M20 52V22L44 52V22" stroke="#054a57" stroke-width="5"/>
+  </g>
+  <path d="M8 53.5h48" stroke="#0d191e" stroke-width="2.6"/>
 </svg>

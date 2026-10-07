@@ -1,13 +1,10 @@
 # Fonts
 
-Totes dues tenen la llicència SIL Open Font License 1.1, que permet fer-les
-servir, copiar-les i redistribuir-les amb el programari. Aquí només hi ha el
-subconjunt llatí (el que fa servir el català), en woff2, tal com el serveix
-Google Fonts.
+**Hanken Grotesk** — Alfredo Marco Pradil (Hanken Design Co.), llicència SIL
+Open Font License 1.1, que permet fer-la servir, copiar-la i redistribuir-la amb
+el programari. Aquí només hi ha el subconjunt llatí (el que fa servir el
+català), en woff2 variable de 400 a 600, tal com el serveix Google Fonts. És la
+mateixa que fa servir l'app del cos.
 
-- **Big Shoulders Display** — Patric King (The Chicago Design System).
-  https://fonts.google.com/specimen/Big+Shoulders+Display
-- **Archivo** — Omnibus-Type.
-  https://fonts.google.com/specimen/Archivo
-
+https://fonts.google.com/specimen/Hanken+Grotesk ·
 Text de la llicència: https://openfontlicense.org

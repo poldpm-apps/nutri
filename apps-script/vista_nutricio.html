@@ -21,7 +21,6 @@ App.registraVista('nutricio', {
     var periode = params.periode || 'dia';
     var apatObert = null;      // quin àpat té el formulari desplegat, si n'hi ha cap
     var dades = null, aliments = [], ajustos = null;
-    var jaHaSortit = false;    // el corredor surt de la sortida un sol cop
 
     var APATS = [
       { clau: 'dinar',   nom: 'Dinar',   art: 'al dinar',   de: 'del dinar'   },
@@ -85,47 +84,44 @@ App.registraVista('nutricio', {
       return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]), 12);
     }
     function nomDiaCurt(iso) { var d = dataDe(iso); return DIES_CURTS[d.getDay()] + ' ' + d.getDate(); }
-    /** El que porta gravat el xip: «DC 07·10». */
-    function codiXip(iso) {
-      var d = dataDe(iso);
-      return DIES_CURTS[d.getDay()].toUpperCase() + ' ' + iso.slice(8, 10) + '·' + iso.slice(5, 7);
-    }
 
     // ------------------------------------------------------------- capçalera
 
     var PERIODES = [['dia', 'Dia'], ['setmana', 'Setmana'], ['mes', 'Mes']];
     var ANTERIOR = { dia: 'Dia anterior', setmana: 'Setmana anterior', mes: 'Mes anterior' };
     var SEGUENT = { dia: 'Dia següent', setmana: 'Setmana següent', mes: 'Mes següent' };
+    var ARA = { dia: 'Avui', setmana: 'Aquesta setmana', mes: 'Aquest mes' };
+    var ALTRE = { dia: '', setmana: 'Una altra setmana', mes: 'Un altre mes' };
 
-    /* EL TAULER DE SORTIDA. El dia es canvia amb les fletxes, que és el que
-       fas cada dia; el període, amb tres botons sempre visibles, que és més
-       curt que un menú per a una cosa que tries d'un toc. «Torna a avui» només
-       surt quan no hi ets. */
+    /* LA CAPÇALERA DEL CATÀLEG, la mateixa que la del cos: la marca a dalt,
+       el títol gran, i a sota el període i el pas d'un dia a l'altre entre
+       dues regles. «Torna a avui» només surt quan no hi ets. */
     function capcalera(esAvui) {
       var nomPeriode = (PERIODES.filter(function (p) { return p[0] === periode; })[0] || PERIODES[0])[1];
-      return '<header class="tauler">' +
-        '<div class="tauler-dalt">' +
-          '<h1 class="prova-nom">Nutrició</h1>' +
-          '<button class="btn" type="button" data-ajustos aria-haspopup="dialog">Objectius</button>' +
-        '</div>' +
-        '<nav class="dies" aria-label="Canvia de ' + esc(nomPeriode.toLowerCase()) + '">' +
-          '<button class="fletxa" type="button" data-salt="-1" aria-label="' + ANTERIOR[periode] + '">' +
-            ic('esquerra', 'ic-p') + '</button>' +
-          '<div class="dia-actual" aria-live="polite">' +
-            '<b>' + esc(titolPeriode()) + '</b>' +
-            '<span>' + esc(nomPeriode) + (esAvui && periode === 'dia' ? ' · avui' : '') + '</span>' +
-            (esAvui ? '' : '<button class="a-avui" type="button" data-anar-avui>Torna a avui</button>') +
+      var on = esAvui ? ARA[periode] : (periode === 'dia' ? nomDiaCurt(data) : ALTRE[periode]);
+      return '<header>' +
+          '<div class="cap">' +
+            '<span class="marca">' + ic('nutricio') + '<span class="gravat tinta">Nutrició</span></span>' +
+            '<button class="btn" type="button" data-ajustos aria-haspopup="dialog">Objectius</button>' +
           '</div>' +
-          '<button class="fletxa" type="button" data-salt="1" aria-label="' + SEGUENT[periode] + '"' +
-            (esAvui ? ' disabled' : '') + '>' + ic('dreta', 'ic-p') + '</button>' +
-        '</nav>' +
+          '<div class="titol"><h1>' + esc(titolPeriode()) + '</h1>' +
+            '<p>' + esc(nomPeriode) + (esAvui && periode === 'dia' ? ' · avui' : '') + '</p></div>' +
+        '</header>' +
         '<div class="periodes" role="group" aria-label="Què vols veure">' +
           PERIODES.map(function (p) {
             return '<button type="button" data-va="' + p[0] + '" aria-pressed="' +
                    (p[0] === periode ? 'true' : 'false') + '">' + p[1] + '</button>';
           }).join('') +
         '</div>' +
-      '</header>';
+        '<nav class="dies" aria-label="Canvia de ' + esc(nomPeriode.toLowerCase()) + '">' +
+          '<button class="fletxa" type="button" data-salt="-1" aria-label="' + ANTERIOR[periode] + '">' +
+            ic('esquerra') + '</button>' +
+          '<div class="dia-actual" aria-live="polite"><span>' + esc(on) + '</span>' +
+            (esAvui ? '' : '<button class="a-avui" type="button" data-anar-avui>Torna a avui</button>') +
+          '</div>' +
+          '<button class="fletxa" type="button" data-salt="1" aria-label="' + SEGUENT[periode] + '"' +
+            (esAvui ? ' disabled' : '') + '>' + ic('dreta') + '</button>' +
+        '</nav>';
     }
 
     function titolPeriode() {
@@ -137,6 +133,17 @@ App.registraVista('nutricio', {
         return m.charAt(0).toUpperCase() + m.slice(1);
       }
       return nomDiaCurt(dades.desde) + ' – ' + nomDiaCurt(dades.fins);
+    }
+
+    /** El número de catàleg d'un dia: «DIA 280», el dia de l'any. */
+    function codiDia(iso) {
+      var d = dataDe(iso), inici = new Date(d.getFullYear(), 0, 1, 12);
+      return 'DIA ' + ('00' + (Math.round((d - inici) / 864e5) + 1)).slice(-3);
+    }
+    function diaMesCurt(iso) {
+      var d = dataDe(iso);
+      return DIES_CURTS[d.getDay()] + ' ' + d.getDate() + ' ' +
+        ['gen', 'febr', 'març', 'abr', 'maig', 'juny', 'jul', 'ag', 'set', 'oct', 'nov', 'des'][d.getMonth()];
     }
 
     /**
@@ -204,122 +211,138 @@ App.registraVista('nutricio', {
         '<button class="btn btn-ple" type="button" data-avisos-full>Activa els avisos</button>';
     }
 
-    // ------------------------------------------------------------- el dorsal
+    // ------------------------------------------------------------- el pols
 
-    /**
-     * EL DORSAL, per al dia i per al període.
-     *
-     *   balanc    kcal, positiu = dèficit; null si encara no n'hi ha
-     *   objectiu  el dèficit objectiu (0 = sense objectiu)
-     *   franja    el que diu la franja de color
-     *   unitat    «kcal» o «kcal/dia»
-     *   dades     les tres caselles de sota, ja en HTML
-     *   xip       el que porta gravat el xip
-     *   mentrestant  {num, cat, franja}: què porta el dorsal mentre no hi
-     *             ha balanç. Sense, hi surt un guió.
-     */
-    function dorsal(o) {
-      var te = o.balanc !== null && o.balanc !== undefined;
-      var b = te ? o.balanc : 0;
-      var costat = !te ? '' : b > 0 ? 'dèficit' : b < 0 ? 'superàvit' : 'equilibri';
-      var mentre = !te && o.mentrestant;
+    var W = 343;   // l'amplada de dibuix: la mateixa que la del pols del cos
 
-      return '<section class="dorsal"' + (periode !== 'dia' ? ' data-periode' : '') +
-          ' aria-labelledby="dorsal-titol">' +
-        '<span class="imperdible ae" aria-hidden="true"></span><span class="imperdible ad" aria-hidden="true"></span>' +
-        '<span class="imperdible be" aria-hidden="true"></span><span class="imperdible bd" aria-hidden="true"></span>' +
-        '<div class="dorsal-franja"><span id="dorsal-titol">' + esc(mentre ? mentre.franja : o.franja) + '</span>' +
-          '<span>' + (o.objectiu > 0 ? 'Objectiu ' + MENYS + m0(o.objectiu) : 'Sense objectiu') + '</span></div>' +
-        '<div class="dorsal-cos">' +
-          '<p class="dorsal-num"' + (te || mentre ? '' : ' data-buit') + '>' +
-            (te ? signe(b) + m0(b) : mentre ? mentre.num : '—') + '</p>' +
-          '<p class="dorsal-cat"' + (te ? '' : ' data-buit') + '><span>' +
-            esc(te ? o.unitat + ' · ' + costat : mentre ? mentre.cat : o.senseBalanc) + '</span></p>' +
-          recorregut(te ? b : null, o.objectiu) +
-          '<dl class="dorsal-dades">' + o.dades + '</dl>' +
-        '</div>' +
-        '<div class="xip" aria-hidden="true"><span class="xip-barres"></span>' +
-          '<span class="xip-codi">' + esc(o.xip) + '</span></div>' +
-      '</section>';
+    /** L'escala del recorregut, la de FitFat: ±800 com a mínim, i que hi càpiguen
+        sempre el CP i el balanç. */
+    function escalaDe(balancos, objectiu) {
+      return Math.max(800, objectiu * 1.4, Math.max.apply(null, balancos.map(Math.abs).concat([0])) * 1.15);
+    }
+    /** On cau un balanç: el mig és l'equilibri, la dreta el dèficit. */
+    function xDe(balanc, escala) { return W / 2 + Math.max(-1, Math.min(1, balanc / escala)) * (W / 2 - 6); }
+
+    /** Una carena: plana, amb un pols a `x`. Torna el traç i el tancament per tapar les del darrere. */
+    function carena(base, x, alcada, llavor) {
+      var pts = [], s = llavor * 9301 + 49297;
+      function atzar() { s = (s * 9301 + 49297) % 233280; return s / 233280; }
+      for (var i = 0; i <= W; i += 3) {
+        var g = (i - x) / 9;
+        var h = x === null ? 0 : alcada * Math.exp(-g * g);
+        h += (atzar() - .5) * (x === null ? 0 : 1.2);
+        pts.push(i + ' ' + (base - Math.max(0, h)).toFixed(1));
+      }
+      var linia = 'M' + pts.join('L');
+      return { linia: linia, tapa: linia + 'L' + W + ' ' + (base + 14) + 'L0 ' + (base + 14) + 'Z' };
+    }
+
+    function rampa(t) {   // del clar al fosc de la rampa, t entre 0 i 1
+      var R = [[0xbc, 0xce, 0xd4], [0x7a, 0xb5, 0xc1], [0x1c, 0x84, 0x96]];
+      var u = Math.max(0, Math.min(1, t)) * (R.length - 1), a = Math.min(Math.floor(u), R.length - 2), f = u - a;
+      return 'rgb(' + R[a].map(function (v, k) { return Math.round(v + (R[a + 1][k] - v) * f); }).join(',') + ')';
     }
 
     /**
-     * El recorregut. L'escala és la de FitFat —que el corredor no se surti
-     * mai del dorsal—: com a mínim ±800, i sempre amb marge per al CP i per al
-     * balanç del dia.
+     * EL POLS DEL DIA. Una carena plana amb un pols a la posició del balanç:
+     * l'equilibri al mig, el dèficit a la dreta, i el punt de control —
+     * l'objectiu— en traços. No hi ha res que s'ompli: el pols és a un lloc.
      */
-    function recorregut(balanc, objectiu) {
-      var te = balanc !== null;
-      var escala = Math.max(800, objectiu * 1.4, te ? Math.abs(balanc) * 1.15 : 0);
-      var x = te ? Math.max(-1, Math.min(1, balanc / escala)) * 50 : 0;
-      var cp = objectiu > 0 ? 50 + Math.min(objectiu / escala, 1) * 50 : 0;
-      var vora = x > 38 ? 'dreta' : x < -38 ? 'esquerra' : '';
-      var sortir = te && !jaHaSortit;
-      if (te) jaHaSortit = true;
+    function polsDia(balanc, objectiu) {
+      var te = balanc !== null && balanc !== undefined;
+      var H = 112, base = 86, escala = escalaDe(te ? [balanc] : [], objectiu);
+      var x = te ? xDe(balanc, escala) : null;
+      var cp = objectiu > 0 ? xDe(objectiu, escala) : null;
+      var c = carena(base, x, 50, 7);
+      var etiqueta = te ? signe(balanc) + m0(balanc) : '';
+      var ancora = x === null ? 'middle' : x > W - 40 ? 'end' : x < 40 ? 'start' : 'middle';
 
-      /* EL MOMENT QUE IMPORTA NO POT QUEDAR TAPAT. Quan el corredor arriba a
-         prop del CP —que és just el resultat que busques—, l'etiqueta «avui» i
-         la bandereta s'encavalcaven. Llavors la bandera mira cap a l'altra
-         banda i l'etiqueta s'obre cap a fora. */
-      var posCorredor = 50 + x;
-      var aprop = te && cp && Math.abs(posCorredor - cp) < 12;
-      var corredorDreta = posCorredor >= cp;
-      /* I el text del CP, si queda a la banda dreta, es llegeix cap a dins. */
-      var cpDreta = cp > 72;
-
-      var diu = !te
-        ? 'Recorregut del balanç: encara sense balanç, falten les calories cremades.'
-        : 'Recorregut del balanç amb l\'equilibri al mig: ' +
+      var diu = !te ? 'Encara sense balanç: falten les calories cremades.'
+        : 'El pols del balanç, amb l\'equilibri al mig: ' +
           (balanc > 0 ? 'dèficit de ' : balanc < 0 ? 'superàvit de ' : 'equilibri, ') +
           (balanc !== 0 ? m0(balanc) + ' kcal' : '') +
-          (objectiu > 0
-            ? (balanc >= objectiu ? ', passat el punt de control de l\'objectiu, '
-                                   : ', abans del punt de control de l\'objectiu, ') + m0(objectiu)
-            : '') + '.';
+          (objectiu > 0 ? (balanc >= objectiu ? ', passat el punt de control de ' : ', abans del punt de control de ') +
+            MENYS + m0(objectiu) : '') + '.';
 
-      return '<div class="recorregut" role="img" aria-label="' + esc(diu) + '">' +
-        '<div class="recorregut-caps" aria-hidden="true"><span>← Superàvit</span><span>Dèficit →</span></div>' +
-        '<div class="pista" aria-hidden="true"' + (te ? '' : ' data-buit') +
-          (aprop && corredorDreta ? ' data-cp-gira' : '') + (cpDreta ? ' data-cp-dreta' : '') +
-          (cp ? ' style="--cp:' + cp.toFixed(2) + '%"' : '') + '>' +
-          '<div class="marques-km"></div><div class="linia"></div>' +
-          '<div class="sortida"></div>' +
-          '<p class="sortida-txt"><b>0</b><br>equilibri</p>' +
-          (cp ? '<div class="cp"></div><p class="cp-txt"><b>CP</b>objectiu ' + MENYS + m0(objectiu) + '</p>' : '') +
-          (te
-            ? '<div class="carril' + (sortir ? ' surt' : '') + '"' +
-                (aprop ? ' data-vora="' + (corredorDreta ? 'esquerra' : 'dreta') + '"' : vora ? ' data-vora="' + vora + '"' : '') +
-                ' style="--x:' + x.toFixed(2) + '%">' +
-                '<div class="corredor"><span class="etiqueta">' + (periode === 'dia' ? 'avui' : 'mitjana') + '</span>' +
-                '<span class="tija"></span><span class="punt"></span></div></div>'
-            : '') +
-        '</div>' +
-      '</div>';
+      return '<svg class="pols" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(diu) + '">' +
+        (cp !== null ? '<path class="cp" d="M' + cp.toFixed(1) + ' 14V' + (base + 8) + '"/>' +
+          '<text x="' + cp.toFixed(1) + '" y="10" text-anchor="' + (cp > W - 60 ? 'end' : 'middle') + '" class="suau">CP ' +
+          MENYS + m0(objectiu) + '</text>' : '') +
+        '<path class="zero" d="M' + (W / 2) + ' ' + (base + 2) + 'V' + (base + 10) + '"/>' +
+        '<text x="' + (W / 2) + '" y="' + (base + 24) + '" text-anchor="middle" class="suau">0</text>' +
+        (te
+          ? '<path class="r" d="' + c.linia + '" stroke="#054a57" stroke-width="1.6"/>' +
+            '<text x="' + x.toFixed(1) + '" y="' + (base - 58) + '" text-anchor="' + ancora + '">' + etiqueta + '</text>'
+          : '<path class="r" d="M0 ' + base + 'H' + W + '" stroke="#7ab5c1" stroke-width="1" stroke-dasharray="2 4"/>') +
+      '</svg>' +
+      '<div class="pols-llegenda" aria-hidden="true"><span class="gravat">← Superàvit</span><span class="gravat">Dèficit →</span></div>';
     }
 
-    function casella(etiqueta, valor, unitat, parcialHtml) {
-      return '<div><dt>' + esc(etiqueta) + '</dt>' +
-        '<dd>' + valor + (unitat ? '<small>' + esc(unitat) + '</small>' : '') + '</dd>' +
-        (parcialHtml || '') + '</div>';
+    /**
+     * EL POLS DEL PERÍODE: una carena per dia, apilades. La més vella al fons,
+     * clara; la d'avui davant, fosca. El CP és una sola línia de traços que les
+     * travessa totes. Un dia sense balanç és una línia de punts plana.
+     */
+    function polsPeriode(d, objectiu) {
+      var dies = d.dies, n = dies.length;
+      var nets = dies.filter(function (x) { return x.net !== null; }).map(function (x) { return x.net; });
+      var escala = escalaDe(nets, objectiu);
+      var pas = n <= 7 ? 14 : 5.4, alt = n <= 7 ? 40 : 30, dalt = alt + 14;
+      var H = dalt + (n - 1) * pas + 30;
+      var cp = objectiu > 0 ? xDe(objectiu, escala) : null;
+      var traces = '';
+      dies.forEach(function (x, i) {
+        var base = dalt + i * pas, davant = i === n - 1;
+        if (x.net === null) {
+          traces += '<path class="r" d="M0 ' + base + 'H' + W + '" stroke="#bcced4" stroke-width="1" stroke-dasharray="2 4"/>';
+          return;
+        }
+        var h = Math.max(8, Math.min(1, Math.abs(x.net) / escala) * alt);
+        var c = carena(base, xDe(x.net, escala), h, i + 3);
+        traces += '<path class="f" d="' + c.tapa + '"/>' +
+          '<path class="r" d="' + c.linia + '" stroke="' + (davant ? '#054a57' : rampa(i / Math.max(1, n - 2))) +
+          '" stroke-width="' + (davant ? 1.6 : 1) + '"/>';
+      });
+      var baix = dalt + (n - 1) * pas;
+      return '<svg class="pols" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' +
+          esc('Una carena per dia, la més recent davant. El pols de cada una és a la posició del seu balanç, ' +
+              'amb l\'equilibri al mig i el dèficit a la dreta' +
+              (objectiu > 0 ? '; la línia de traços és l\'objectiu, ' + MENYS + m0(objectiu) : '') + '.') + '">' +
+        traces +
+        (cp !== null ? '<path class="cp" d="M' + cp.toFixed(1) + ' 12V' + (baix + 8) + '"/>' +
+          '<text x="' + cp.toFixed(1) + '" y="8" text-anchor="' + (cp > W - 60 ? 'end' : 'middle') + '" class="suau">CP ' +
+          MENYS + m0(objectiu) + '</text>' : '') +
+        '<path class="zero" d="M' + (W / 2) + ' ' + (baix + 2) + 'V' + (baix + 10) + '"/>' +
+        '<text x="' + (W / 2) + '" y="' + (baix + 24) + '" text-anchor="middle" class="suau">0</text>' +
+      '</svg>' +
+      '<div class="pols-llegenda" aria-hidden="true"><span class="gravat">← Superàvit</span><span class="gravat">Dèficit →</span></div>';
     }
 
-    function casellaProteina(etiqueta, proteina, objectiu) {
-      if (!(objectiu > 0)) return casella(etiqueta, r1(proteina), 'g');
+    function xifra(etiqueta, valor, unitat, detall, marca) {
+      return '<div class="xifra"><p class="gravat">' + esc(etiqueta) + '</p>' +
+        '<p class="gran"><span class="n">' + valor + '</span>' + (unitat ? '<span class="u">' + esc(unitat) + '</span>' : '') + '</p>' +
+        (detall ? '<p class="d"' + (marca ? ' data-' + marca : '') + '>' + esc(detall) + '</p>' : '') + '</div>';
+    }
+
+    function xifraProteina(etiqueta, proteina, objectiu) {
+      if (!(objectiu > 0)) return xifra(etiqueta, r1(proteina), 'g');
       var falta = objectiu - proteina;
-      return '<div><dt>' + esc(etiqueta) + '</dt>' +
-        '<dd>' + r1(proteina) + ' <span class="de">/ ' + r0(objectiu) + ' g</span></dd>' +
-        (falta > 0
-          ? '<dd class="parcial">falten ' + r1(falta) + ' g</dd>'
-          : '<dd class="parcial" data-fet>objectiu assolit</dd>') +
-      '</div>';
+      return xifra(etiqueta, r1(proteina), 'g',
+        falta > 0 ? 'falten ' + r1(falta) + ' de ' + r0(objectiu) : 'objectiu de ' + r0(objectiu) + ' assolit',
+        falta > 0 ? '' : 'fet');
     }
+
+    var PARAULA = {
+      deficit_assolit: 'Objectiu assolit', deficit: 'En dèficit', superavit: 'En superàvit',
+      equilibri: 'En equilibri'
+    };
 
     // ------------------------------------------------------------ vista dia
 
-    /* L'ordre és el de FitFat, i és el bo: el dorsal a dalt de tot perquè és
+    /* L'ordre és el de FitFat, i és el bo: el balanç a dalt de tot perquè és
        el que mires primer, després els àpats que és on treballes, i el
        tancament al final perquè és l'última cosa que fas del dia. A
-       l'ordinador, el dorsal a l'esquerra i el full a la dreta. */
+       l'ordinador, el pols a l'esquerra i el full a la dreta. */
     function pintaDia(d, dEnCau) {
       dades = d;
       arrel.innerHTML = '<div class="envoltori">' +
@@ -328,18 +351,16 @@ App.registraVista('nutricio', {
         '<div class="curs">' +
           '<div class="columna" id="col-dalt">' + blocDalt(d) + '</div>' +
           '<div class="columna">' +
-            '<section class="full" aria-labelledby="t-apats">' +
-              '<header class="full-cap"><h2 id="t-apats">Àpats</h2>' +
-                '<p>Full de parcials<br>' + esc(nomDiaCurt(d.data)) + '</p></header>' +
-              '<div class="capcol" aria-hidden="true"><span>Aliment · grams · per 100 g</span><span>kcal · prot</span><span></span></div>' +
+            '<section class="sec" aria-labelledby="t-apats">' +
+              '<div class="sec-cap"><h2 id="t-apats">Àpats</h2><span class="gravat">' + esc(diaMesCurt(d.data)) + '</span></div>' +
               '<div id="col-apats">' +
                 APATS.map(function (m, i) { return blocApat(d, m, i); }).join('') +
               '</div>' +
             '</section>' +
-            '<section class="full meta" id="col-tanca" aria-labelledby="t-tanca">' + blocTanca(d) + '</section>' +
+            '<section class="sec" id="col-tanca" aria-labelledby="t-tanca">' + blocTanca(d) + '</section>' +
           '</div>' +
         '</div>' +
-        (dEnCau ? '<p class="menut" style="margin-top:var(--e4)">Última còpia desada al telèfon.</p>' : '') +
+        (dEnCau ? '<p class="menut" style="padding:var(--e4) var(--gutter) 0">Última còpia desada al telèfon.</p>' : '') +
       '</div>';
 
       lligaCapcalera();
@@ -348,50 +369,49 @@ App.registraVista('nutricio', {
       lligaAvisos();
     }
 
-    /** El dorsal del dia: el balanç, el recorregut i les tres xifres. */
+    /** El veredicte, el pols i les quatre xifres del dia. */
     function blocDalt(d) {
-      var t = d.totals;
-      return dorsal({
-        balanc: d.teCremades ? d.net : null,
-        objectiu: d.objectius.deficit || 0,
-        franja: 'Balanç del dia',
-        unitat: 'kcal',
-        senseBalanc: 'falten les cremades',
-        /* DE DIA, EL QUE PORTES MENJAT. Les cremades arriben al vespre, i
-           fins llavors un dorsal amb un guió gris era el primer que veies
-           cada vegada que obries l'app. El que sí que se sap és el que has
-           menjat; el recorregut segueix en traç perquè quedi clar que
-           encara no hi ha balanç. */
-        mentrestant: t.ingerides > 0
-          ? { num: m0(t.ingerides), cat: 'kcal ingerides · falten les cremades', franja: 'Ingerides fins ara' }
-          : null,
-        xip: codiXip(d.data),
-        dades:
-          casella('Ingerides', m0(t.ingerides), 'kcal') +
-          casellaProteina('Proteïna', t.proteina, d.objectius.proteina) +
-          casella('Cremades', d.teCremades ? m0(d.cremades) : '—', d.teCremades ? 'kcal' : '')
-      });
+      var t = d.totals, obj = d.objectius.deficit || 0;
+      var estat = d.verdicte.estat;
+      var paraula = d.teCremades ? (PARAULA[estat] || d.verdicte.text)
+                  : (t.ingerides > 0 ? 'Falten les cremades' : 'Encara no hi ha res');
+      var apats = d.apats.filter(function (a) { return a.items && a.items.length; }).length;
+
+      return '<section class="veredicte" aria-labelledby="v-text">' +
+          '<p class="gravat"><span class="num-cat">' + codiDia(d.data) + '</span> · ' + esc(diaMesCurt(d.data)) +
+            (d.data === fmt.avui() ? ' · avui' : '') + '</p>' +
+          '<p class="v" id="v-text" data-estat="' + esc(estat) + '">' + esc(paraula) + '</p>' +
+          polsDia(d.teCremades ? d.net : null, obj) +
+        '</section>' +
+        '<section class="xifres" aria-label="Les quatre xifres del dia">' +
+          xifra('Balanç', d.teCremades ? signe(d.net) + m0(d.net) : '—', d.teCremades ? 'kcal' : '',
+                obj > 0 ? 'objectiu ' + MENYS + m0(obj) : '', d.teCremades && d.net < 0 ? 'avis' : '') +
+          xifra('Ingerides', m0(t.ingerides), 'kcal',
+                apats === 0 ? 'res apuntat' : apats === 1 ? '1 àpat' : apats + ' àpats') +
+          xifraProteina('Proteïna', t.proteina, d.objectius.proteina) +
+          xifra('Cremades', d.teCremades ? m0(d.cremades) : '—', d.teCremades ? 'kcal' : '',
+                d.teCremades ? 'del rellotge' : 'falten') +
+        '</section>';
     }
 
-    /** La meta: el que has cremat, i què en surt. */
+    /** El tancament: el que has cremat, i què en surt. */
     function blocTanca(d) {
       var compte = d.teCremades
         ? m0(d.cremades) + ' cremades ' + MENYS + ' ' + m0(d.totals.ingerides) + ' ingerides → ' +
           signe(d.net) + m0(d.net) + ' kcal (' + (d.net > 0 ? 'dèficit' : d.net < 0 ? 'superàvit' : 'equilibri') + ')'
         : m0(d.totals.ingerides) + ' kcal ingerides · falten les cremades';
 
-      return '<div class="escacs" aria-hidden="true"></div>' +
-        '<header class="full-cap"><h2 id="t-tanca">Tancament</h2><p>La meta del dia</p></header>' +
+      return '<div class="sec-cap"><h2 id="t-tanca">Tancament</h2><span class="gravat">la meta del dia</span></div>' +
         '<div class="meta-cos">' +
-          '<label class="camp" for="n-activitat"><span>Calories cremades (total del dia, del rellotge)</span></label>' +
+          '<label class="camp" for="n-activitat"><span>Calories cremades · total del dia, del rellotge</span></label>' +
           '<div class="cremades">' +
             '<input id="n-activitat" inputmode="numeric" autocomplete="off" enterkeyhint="done" value="' +
-              (d.teActivitat ? esc(String(d.activitat)) : '') + '" placeholder="p. ex. 2400">' +
+              (d.teActivitat ? esc(String(d.activitat)) : '') + '" placeholder="2400">' +
             '<span aria-hidden="true">kcal</span>' +
           '</div>' +
           '<p class="compte">' + esc(compte) + '</p>' +
-          '<p class="veredicte" data-estat="' + esc(d.verdicte.estat) + '" role="status">' +
-            '<span class="senyal" aria-hidden="true"></span><span>' + esc(ambMilers(d.verdicte.text)) + '</span></p>' +
+          '<p class="veredicte-linia" data-estat="' + esc(d.verdicte.estat) + '" role="status">' +
+            esc(ambMilers(d.verdicte.text)) + '</p>' +
         '</div>';
     }
 
@@ -404,7 +424,8 @@ App.registraVista('nutricio', {
 
       return '<section class="apat" data-apat="' + esc(m.clau) + '" aria-labelledby="t-' + m.clau + '">' +
         '<div class="apat-cap">' +
-          '<h3 id="t-' + m.clau + '"><span class="pk" aria-hidden="true">P' + (idx + 1) + '</span>' + esc(m.nom) + '</h3>' +
+          '<h3 id="t-' + m.clau + '"><span class="gravat" aria-hidden="true"><span class="num-cat">P' + (idx + 1) + '</span></span>' +
+            esc(m.nom) + '</h3>' +
           '<p class="apat-tot"' + (apat.items.length ? '' : ' data-buit') + '>' +
             (apat.items.length ? m0(apat.kcal) + ' kcal · ' + r1(apat.proteina) + ' g' : 'buit') + '</p>' +
         '</div>' +
@@ -415,7 +436,7 @@ App.registraVista('nutricio', {
                 '<div><p class="ingesta-nom">' + esc(i.nom) + '</p>' +
                   '<p class="ingesta-espec"><span>' + r0(i.grams) + ' g</span><span>' + r0(i.kcal100) +
                   ' kcal/100</span><span>' + r1(i.prot100) + ' prot/100</span></p></div>' +
-                '<p class="ingesta-surt"><span class="k">' + m0(i.kcal) + '</span><span class="ku">kcal</span>' +
+                '<p class="ingesta-surt">' + m0(i.kcal) + '<span class="ku">kcal</span>' +
                   '<span class="p">' + r1(i.prot) + ' g</span></p>' +
                 '<button class="treu" type="button" data-treu="' + esc(i.id) + '" data-quin="' + esc(i.nom) +
                   '" aria-label="Treu ' + esc(i.nom) + ' ' + esc(m.de) + '">' + ic('tancar', 'ic-p') + '</button>' +
@@ -427,7 +448,7 @@ App.registraVista('nutricio', {
            Els tres àpats amb el formulari desplegat feien la pàgina molt
            llarga: per veure el tancament del dia havies de passar per sobre de
            tres formularis buits. Obrir-ne un tanca l'altre. */
-        '<button class="btn obre-form" type="button" data-obre-form="' + esc(m.clau) + '"' +
+        '<button class="btn btn-ple obre-form" type="button" data-obre-form="' + esc(m.clau) + '"' +
           ' aria-expanded="' + (obert ? 'true' : 'false') + '" aria-controls="' + idForm + '">' +
           ic('mes', 'ic-p') + 'Afegeix-hi<span class="nomes-lectors"> ' + esc(m.art) + '</span></button>' +
 
@@ -438,7 +459,7 @@ App.registraVista('nutricio', {
             /* Llista pròpia i no un <select>: el desplegable natiu d'Android
                dibuixa cada opció amb l'estil del sistema i no admet dues mides
                de lletra a la mateixa línia. */
-            '<button class="btn tria" type="button" data-guardats aria-haspopup="dialog">Tria un aliment guardat' +
+            '<button class="btn btn-ple tria" type="button" data-guardats aria-haspopup="dialog">Tria un aliment guardat' +
               ic('dreta', 'ic-p') + '</button>' +
             '<label for="' + idForm + '-nom"><span>Aliment</span></label>' +
             '<input id="' + idForm + '-nom" data-nom name="aliment" autocomplete="off" enterkeyhint="next"' +
@@ -490,18 +511,15 @@ App.registraVista('nutricio', {
 
     // -------------------------------------------------------- setmana i mes
 
-    /* EL PERÍODE ÉS UN DORSAL DE MITJANES I UNA CLASSIFICACIÓ.
-       El dorsal diu el balanç mitjà per dia; a sota, cada dia a la seva
-       posició respecte de l'equilibri. Setmana i mes són gràfiques diferents a
-       posta: amb set dies hi caben el nom del dia i la xifra a cada fila, i
-       amb trenta-un no —el mes és el perfil de la cursa: amunt dèficit, avall
-       superàvit—. */
+    var totsElsDies = false;   // al mes, la llista ensenya els set últims fins que en demanes més
+
+    /* EL PERÍODE: les carenes apilades a dalt, i a sota la llista dels dies
+       com els controls del cos —número de catàleg, veredicte i xifra—. Tocar un
+       dia hi va, també el que no té balanç: el dia «sense cremades» és
+       justament el que obres per entrar-les. */
     function pintaPeriode(d) {
       dades = d;
-
-      var nets = d.dies.map(function (x) { return x.net === null ? 0 : Math.abs(x.net); });
       var obj = d.objectius.deficit || 0;
-      var escala = Math.max(600, obj * 1.4, Math.max.apply(null, nets));
       var enDeficit = d.dies.filter(function (x) { return x.net !== null && x.net > 0; }).length;
       var enSuperavit = d.dies.filter(function (x) { return x.net !== null && x.net < 0; }).length;
       var nomP = periode === 'setmana' ? 'la setmana' : 'el mes';
@@ -510,34 +528,30 @@ App.registraVista('nutricio', {
         capcalera(!d.fins || d.fins >= fmt.avui()) +
         '<div class="curs">' +
           '<div class="columna">' +
-            dorsal({
-              balanc: d.diesAmbBalanc ? d.mitjanaNet : null,
-              objectiu: obj,
-              franja: 'Balanç mitjà · ' + (periode === 'setmana' ? 'setmana' : 'mes'),
-              unitat: 'kcal/dia',
-              senseBalanc: 'cap dia amb balanç',
-              xip: d.desde ? codiXip(d.desde) + ' → ' + codiXip(d.fins) : '',
-              dades:
-                casella('Ingerides / dia', m0(d.mitjanaIngerides), 'kcal') +
-                casellaProteina('Proteïna / dia', d.mitjanaProteina, d.objectius.proteina) +
-                casella('Dies apuntats', String(d.diesApuntats), 'de ' + d.dies.length)
-            }) +
+            '<section class="veredicte" aria-labelledby="v-text">' +
+              '<p class="gravat"><span class="num-cat">' + (periode === 'setmana' ? 'SETMANA' : 'MES') + '</span>' +
+                (d.desde ? ' · ' + esc(diaMesCurt(d.desde)) + ' → ' + esc(diaMesCurt(d.fins)) : '') + '</p>' +
+              '<p class="v" id="v-text"' + (d.diesAmbBalanc && d.mitjanaNet < 0 ? ' data-estat="superavit"'
+                : !d.diesAmbBalanc ? ' data-estat="sense_dades"' : '') + '>' +
+                (d.diesAmbBalanc ? signe(d.mitjanaNet) + m0(d.mitjanaNet) + ' kcal/dia' : 'Cap dia amb balanç') + '</p>' +
+              (d.diesApuntats === 0
+                ? '<p class="menut" style="margin-top:var(--e3)">Encara no hi ha res apuntat en ' + nomP + '.</p>'
+                : polsPeriode(d, obj)) +
+            '</section>' +
+            '<section class="xifres" aria-label="Les xifres del període">' +
+              xifra('Ingerides / dia', m0(d.mitjanaIngerides), 'kcal') +
+              xifraProteina('Proteïna / dia', d.mitjanaProteina, d.objectius.proteina) +
+              xifra('Dies apuntats', String(d.diesApuntats), 'de ' + d.dies.length,
+                    enDeficit + ' en dèficit · ' + enSuperavit + ' en superàvit') +
+              xifra('Acumulat', d.diesAmbBalanc ? signe(d.netAcumulat) + m0(d.netAcumulat) : '—',
+                    d.diesAmbBalanc ? 'kcal' : '', d.diesAmbBalanc ? 'balanç del període' : '',
+                    d.diesAmbBalanc && d.netAcumulat < 0 ? 'avis' : '') +
+            '</section>' +
           '</div>' +
           '<div class="columna">' +
-            '<section class="full" aria-labelledby="t-periode">' +
-              '<header class="full-cap"><h2 id="t-periode">' +
-                (periode === 'setmana' ? 'Classificació' : 'Perfil del mes') + '</h2>' +
-                '<p>Balanç de cada dia<br>respecte de l\'equilibri</p></header>' +
-              (d.diesApuntats === 0
-                ? '<p class="buit-periode">Encara no hi ha res apuntat en ' + nomP + '.</p>'
-                : (periode === 'setmana' ? taulaSetmana(d, escala, obj) : perfilMes(d, escala, obj))) +
-              '<div class="resum">' +
-                '<p><b>' + d.diesApuntats + '</b> ' + (d.diesApuntats === 1 ? 'dia apuntat' : 'dies apuntats') +
-                  ' · <b>' + enDeficit + '</b> en dèficit · <b>' + enSuperavit + '</b> en superàvit</p>' +
-                (d.diesAmbBalanc
-                  ? '<p>Balanç acumulat: <b class="num">' + signe(d.netAcumulat) + m0(d.netAcumulat) + ' kcal</b></p>'
-                  : '') +
-              '</div>' +
+            '<section class="sec" aria-labelledby="t-dies">' +
+              '<div class="sec-cap"><h2 id="t-dies">Dies</h2><span class="gravat">toca\'n un per obrir-lo</span></div>' +
+              llistaDies(d, obj) +
             '</section>' +
           '</div>' +
         '</div>' +
@@ -549,97 +563,34 @@ App.registraVista('nutricio', {
           App.ves('nutricio', { data: b.dataset.dia, periode: 'dia' });
         });
       });
+      var bt = arrel.querySelector('[data-tots]');
+      if (bt) bt.addEventListener('click', function () { totsElsDies = !totsElsDies; pintaPeriode(d); });
     }
 
-    /**
-     * Set files: el dia, el seu lloc al recorregut, i la xifra.
-     *
-     * LA FILA SENCERA ÉS EL BOTÓ, també la dels dies sense balanç: el dia
-     * «sense cremades» és justament el que obres per entrar-les. El botó va a
-     * la primera cel·la i s'estira per sobre de tota la fila.
-     */
-    function taulaSetmana(d, escala, obj) {
-      var cp = obj > 0 ? (50 + Math.min(obj / escala, 1) * 50).toFixed(2) : 0;
-      var avui = fmt.avui();
-      return '<table class="classif">' +
-        '<caption class="nomes-lectors">Balanç de cada dia respecte de l\'equilibri' +
-          (obj > 0 ? ', amb el punt de control a ' + MENYS + m0(obj) : '') + '. Toca un dia per obrir-lo.</caption>' +
-        '<thead><tr><th scope="col">Dia</th><th scope="col">Recorregut</th><th scope="col">Balanç</th></tr></thead>' +
-        '<tbody>' +
-        d.dies.map(function (x) {
-          var esAvui = x.data === avui;
-          var deficit = x.net !== null && x.net > 0;
-          var lloc = x.net === null ? (x.apuntat ? 'sense cremades' : 'sense dades')
-                   : !deficit ? 'superàvit'
-                   : obj > 0 && x.net >= obj ? 'objectiu assolit'
-                   : obj > 0 ? 'sota l\'objectiu' : 'dèficit';
-          var diu = fmt.llarga(x.data) + ': ' +
-            (x.net === null ? lloc : (deficit ? 'dèficit ' : 'superàvit ') + m0(x.net) + ' kcal, ' + lloc) +
-            '. Obre el dia';
-          var nom = '<th scope="row"><button class="anar-dia" type="button" data-dia="' + esc(x.data) +
-            '" aria-label="' + esc(diu) + '">' + esc(nomDiaCurt(x.data)) +
-            (esAvui ? '<small>avui</small>' : '') + '</button></th>';
-          var obert = '<tr' + (esAvui ? ' class="avui"' : '') + '>';
-
-          if (x.net === null) {
-            return obert + nom +
-              '<td><div class="mini" data-buit aria-hidden="true"><span class="s0"></span></div></td>' +
-              '<td class="xifra-dia" aria-hidden="true">' + (x.apuntat
-                ? '<span class="n">—</span><span class="s">sense cremades</span>'
-                : '<span class="dns">DNS</span><span class="s">sense dades</span>') + '</td></tr>';
-          }
-          var pos = 50 + Math.max(-1, Math.min(1, x.net / escala)) * 50;
-          return obert + nom +
-            '<td><div class="mini" aria-hidden="true"' + (cp ? ' style="--cp:' + cp + '%"' : '') + '>' +
-                '<span class="s0"></span>' + (cp ? '<span class="c"></span>' : '') +
-                '<span class="d"' + (!deficit ? ' data-sobre' : obj > 0 && x.net < obj ? ' data-curt' : '') +
-                ' style="left:' + pos.toFixed(2) + '%"></span></div></td>' +
-            '<td class="xifra-dia" aria-hidden="true"><span class="n">' + signe(x.net) + m0(x.net) +
-              '</span><span class="s">' + lloc + '</span></td></tr>';
-        }).join('') +
-        '</tbody></table>';
-    }
-
-    /**
-     * Un mes sencer: el perfil. Amunt dèficit, avall superàvit, i el CP en traç.
-     * Cada dia és una columna que es pot tocar —estreta, però hi és: el camí
-     * precís és la setmana—, i el lector de pantalla la llegeix com a botó.
-     */
-    function perfilMes(d, escala, obj) {
-      var n = d.dies.length;
-      var barres = d.dies.map(function (x, i) {
-        var esq = (i / n * 100).toFixed(3), ample = (100 / n).toFixed(3);
-        var diu = fmt.llarga(x.data) + ': ' +
-          (x.net === null ? (x.apuntat ? 'sense cremades' : 'sense dades')
-                          : (x.net > 0 ? 'dèficit ' : 'superàvit ') + m0(x.net) + ' kcal') + '. Obre el dia';
-        var barra = '';
-        if (x.net !== null) {
-          var deficit = x.net > 0;
-          var h = Math.min(Math.abs(x.net) / escala * 48, 48);
-          barra = '<i data-costat="' + (deficit ? 'deficit' : 'superavit') + '" style="' +
-            (deficit ? 'bottom:50%;' : 'top:50%;') + 'height:' + h.toFixed(2) + '%"></i>';
-        }
-        return '<button class="perfil-dia" type="button" data-dia="' + esc(x.data) + '" aria-label="' + esc(diu) +
-          '" style="left:' + esq + '%;width:' + ample + '%">' + barra + '</button>';
-      }).join('');
-      var cp = obj > 0 ? 50 - Math.min(obj / escala * 48, 48) : null;
-      // Les fites van SOTA la gràfica, no a dins. A dins tapaven les barres.
-      var fites = [1, 5, 10, 15, 20, 25, 30].filter(function (v) { return v <= n; });
-
-      return '<div class="perfil">' +
-          '<div class="perfil-caixa">' +
-            (cp !== null ? '<div class="perfil-cp" aria-hidden="true" style="top:' + cp.toFixed(2) + '%"></div>' : '') +
-            barres +
-          '</div>' +
-          '<div class="perfil-eix" aria-hidden="true">' +
-            fites.map(function (v) {
-              return '<span style="left:' + ((v - 0.5) / n * 100).toFixed(2) + '%">' + v + '</span>';
-            }).join('') +
-          '</div>' +
-          '<div class="perfil-peu" aria-hidden="true"><span>▲ dèficit</span>' +
-            (cp !== null ? '<span class="perfil-llegenda">CP ' + MENYS + m0(obj) + '</span>' : '') +
-            '<span>superàvit ▼</span></div>' +
-        '</div>';
+    /** La llista de dies, del més recent al més vell. */
+    function llistaDies(d, obj) {
+      var avui = fmt.avui(), dies = d.dies.slice().reverse();
+      var limit = periode === 'mes' && !totsElsDies ? 7 : dies.length;
+      var html = '<ol>' + dies.slice(0, limit).map(function (x) {
+        var deficit = x.net !== null && x.net > 0;
+        var paraula = x.net === null ? (x.apuntat ? 'Sense cremades' : 'Sense dades')
+                    : !deficit ? (x.net === 0 ? 'En equilibri' : 'En superàvit')
+                    : obj > 0 && x.net >= obj ? 'Objectiu assolit' : 'En dèficit';
+        var marca = x.net === null ? ' data-buit' : x.net < 0 ? ' data-avis' : '';
+        var diu = fmt.llarga(x.data) + ': ' + paraula.toLowerCase() +
+          (x.net !== null && x.net !== 0 ? ', ' + m0(x.net) + ' kcal' : '') + '. Obre el dia';
+        return '<li><button class="fila" type="button" data-dia="' + esc(x.data) + '" aria-label="' + esc(diu) + '"' +
+            (x.data === avui ? ' aria-current="true"' : '') + '>' +
+          '<span class="cat">' + codiDia(x.data) + '<b>' + esc(nomDiaCurt(x.data)) + (x.data === avui ? ' · avui' : '') + '</b></span>' +
+          '<span class="fila-v"' + marca + '>' + paraula + '</span>' +
+          '<span class="val">' + (x.net === null ? '—' : signe(x.net) + m0(x.net)) + '</span>' +
+        '</button></li>';
+      }).join('') + '</ol>';
+      if (periode === 'mes' && dies.length > 7) {
+        html += '<div class="tots"><button class="btn" type="button" data-tots aria-expanded="' + totsElsDies + '">' +
+          (totsElsDies ? 'Només els set últims' : 'Tots els dies · ' + dies.length) + '</button></div>';
+      }
+      return html;
     }
 
     // -------------------------------------------------------------- accions
