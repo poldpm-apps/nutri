@@ -5,7 +5,7 @@ Nutrició de JEFE i fa exactament el mateix: els àpats, el rebost d'aliments
 guardats, l'activitat del dia, el balanç, l'objectiu de proteïna, la setmana i
 el mes, i l'importador de FitFat.
 
-- **L'app:** <https://poldpm.github.io/nutri/>
+- **L'app:** <https://poldpm-apps.github.io/nutri/>
 - **Les dades:** un full de càlcul propi, «Nutrició», al teu Drive.
 - **El servidor:** un projecte d'Apps Script propi, «Nutrició».
 
@@ -71,8 +71,10 @@ Mai al codi ni al repositori.
 - **Android necessita icones PNG.** Amb només SVG, Chrome deia «ja està
   instal·lada» i després «l'app no s'ha pogut obrir». El manifest porta PNG de
   192 i 512 (i una de retallable) abans dels SVG; una prova ho vigila.
-- **L'adreça és `/nutri/` i no `/nutricio/`.** Al mòbil hi va quedar una app
-  amagada, d'una primera instal·lació feta a mitges, que reclamava `/nutricio/`:
-  Android deia «ja està instal·lada» per a tot el que hi hagués a sota, encara
-  que s'esborrés tot. El repositori es va reanomenar a `poldpm/nutri`. L'`"id"`
-  del manifest és `/nutri/` i no es canvia: per a Chrome seria una altra app.
+- **L'app viu a `poldpm-apps.github.io`, no a `poldpm.github.io`.** Al mòbil
+  hi ha una app amagada i trencada que reclama TOT el domini `poldpm.github.io`:
+  Android deia «ja està instal·lada» per a qualsevol pàgina d'allà (també per al
+  Taulell), encara que s'esborressin totes les dades. El repositori es va passar a
+  l'organització `poldpm-apps`, que és un altre domini. L'`"id"` del manifest és
+  `/nutri/` i no es canvia: per a Chrome seria una altra app. Les apps noves
+  (el cos, les finances) també han d'anar a `poldpm-apps`.

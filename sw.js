@@ -22,7 +22,7 @@
    «tot el que no sigui meu», cada app que s'actualitzés buidaria la de les
    altres. */
 var PREFIX = 'nutricio-';
-var CAU = PREFIX + 'v6';   // v6: l'app passa a /nutri/
+var CAU = PREFIX + 'v7';   // v7: l'app passa a poldpm-apps.github.io
 var ESSENCIALS = [
   './',
   './index.html',
