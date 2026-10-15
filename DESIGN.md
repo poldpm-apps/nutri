@@ -171,6 +171,18 @@ Pla del tot. No hi ha ombres, només regles:
     la proteïna a la dreta, i una creu de 44 px.
   - El formulari queda entre regles, amb les etiquetes gravades.
   - El botó principal és ple i ensenya el resultat abans de prémer-lo.
+- **Foto del plat:** només surt avui, a dalt dels àpats. És el botó ple
+  «Fotografia el plat», amb una línia a sota que diu a quin àpat anirà.
+  - El full que puja té la foto retallada, el nom del plat i la nota del que
+    és incert.
+  - Cada aliment és una fila amb el nom i els grams editables, i les kcal i la
+    proteïna recalculades al moment.
+  - L'àpat ve triat per l'hora i es canvia amb les mateixes pestanyes gravades
+    que el període.
+  - El botó ple diu on va i quant suma. «No és ben bé això?» deixa afegir una
+    pista i tornar-ho a llegir.
+  - Mentre llegeix, un pols curt recorre una regla. És el mateix gest que el
+    balanç, i no hi ha cap ruleta.
 - **Tancament:** el camp de cremades en xifra gran, el compte i el veredicte
   en una línia.
 - **Dies del període:** cada dia és una fila de catàleg (`DIA 279 / dt 6`),

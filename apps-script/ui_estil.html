@@ -351,6 +351,53 @@ input[type="file"].entrada { padding: var(--e3); font-size: 14px; }
 .obre-form { margin-top: var(--e3); }
 .obre-form[aria-expanded="true"] { display: none; }
 
+/* --- la foto del plat: l'entrada més curta, la primera del full --- */
+.foto-plat { padding: var(--e4) 0 var(--e2); }
+.foto-plat .menut { margin-top: var(--e2); }
+
+.plat-foto { display: block; width: 100%; max-height: 24dvh; object-fit: cover; margin-bottom: var(--e4);
+             border-bottom: 1px solid var(--fil-fort); }
+.plat-llegint { padding: var(--e2) 0 var(--e5); }
+.plat-llegint p { margin-top: 6px; font-size: 15px; }
+/* Mentre llegeix, un pols que passa per la línia: el mateix gest que el balanç. */
+.plat-pols { display: block; position: relative; height: 1px; margin-top: var(--e4); background: var(--fil); overflow: hidden; }
+.plat-pols::after { content: ""; position: absolute; top: 0; left: 0; width: 28%; height: 1px; background: var(--t4);
+                    animation: passa 1.4s var(--ease-out) infinite; }
+@keyframes passa { from { transform: translateX(-100%); } to { transform: translateX(360%); } }
+.plat-titol { font-size: 22px; font-weight: 600; letter-spacing: -.01em; line-height: 1.2; }
+.plat-titol::first-letter { text-transform: uppercase; }
+.plat-nota { margin-top: 6px; }
+.plat-llista { margin-top: var(--e4); border-top: 1px solid var(--fil-fort); }
+.plat-fila { display: grid; grid-template-columns: minmax(0, 1fr) 92px var(--toc); grid-template-areas: "nom nom treu" "grams surt treu";
+             gap: var(--e2) 10px; align-items: center; padding: var(--e3) 0; border-bottom: 1px solid var(--fil); }
+.plat-nom { grid-area: nom; }
+.plat-nom .entrada { font-weight: 600; }
+.plat-grams { grid-area: grams; display: flex; align-items: center; gap: 6px; max-width: 120px; }
+.plat-grams .entrada { text-align: right; }
+.plat-grams span { font-size: 14px; color: var(--tinta-2); }
+.plat-surt { grid-area: surt; text-align: right; line-height: 1.2; white-space: nowrap; font-size: 15px; font-weight: 600; }
+.plat-surt .ku { margin-left: 2px; font-size: 13px; font-weight: 500; color: var(--tinta-2); }
+.plat-surt .p { display: block; font-size: 13px; font-weight: 500; color: var(--tinta-2); }
+.plat-fila .treu { grid-area: treu; }
+.plat-apat { display: flex; align-items: center; justify-content: space-between; gap: var(--e3); margin-top: var(--e4); }
+.plat-apat > div { display: flex; gap: var(--e5); }
+.plat-apat button {
+  min-height: var(--toc); padding: 0; border: 0; background: none; cursor: pointer;
+  font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta-2);
+  box-shadow: inset 0 -2px 0 transparent; transition: color 150ms ease, box-shadow 150ms ease;
+}
+.plat-apat button[aria-checked="true"] { color: var(--tinta); box-shadow: inset 0 -2px 0 var(--t4); }
+.plat-apat button:focus-visible { outline: 2px solid var(--t4); outline-offset: 2px; }
+.plat .camp-mal { margin-top: var(--e3); }
+.plat-accions { display: grid; gap: var(--e2); margin-top: var(--e4); }
+.plat-pista { margin-top: var(--e4); border-top: 1px solid var(--fil); }
+.plat-pista summary { min-height: var(--toc); display: flex; align-items: center; cursor: pointer;
+                      font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.plat-pista[open] { padding-bottom: var(--e3); }
+.plat-pista .camp { margin-bottom: 6px; }
+.plat-pista .btn { margin-top: var(--e2); }
+.plat-altra { margin-top: var(--e2); }
+
 .inscripcio { margin-top: var(--e3); padding: var(--e3) 0 var(--e4); border-top: 1px solid var(--fil-fort); border-bottom: 1px solid var(--fil); }
 .inscripcio[hidden] { display: none; }
 .inscripcio-franja { display: flex; justify-content: space-between; align-items: center; gap: var(--e2); margin-bottom: var(--e2); }

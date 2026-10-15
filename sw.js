@@ -22,7 +22,7 @@
    «tot el que no sigui meu», cada app que s'actualitzés buidaria la de les
    altres. */
 var PREFIX = 'nutricio-';
-var CAU = PREFIX + 'v9';   // v9: la icona sense línia de base
+var CAU = PREFIX + 'v10';  // v10: la foto del plat
 var ESSENCIALS = [
   './',
   './index.html',

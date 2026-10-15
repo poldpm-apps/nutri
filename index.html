@@ -380,6 +380,53 @@ input[type="file"].entrada { padding: var(--e3); font-size: 14px; }
 .obre-form { margin-top: var(--e3); }
 .obre-form[aria-expanded="true"] { display: none; }
 
+/* --- la foto del plat: l'entrada més curta, la primera del full --- */
+.foto-plat { padding: var(--e4) 0 var(--e2); }
+.foto-plat .menut { margin-top: var(--e2); }
+
+.plat-foto { display: block; width: 100%; max-height: 24dvh; object-fit: cover; margin-bottom: var(--e4);
+             border-bottom: 1px solid var(--fil-fort); }
+.plat-llegint { padding: var(--e2) 0 var(--e5); }
+.plat-llegint p { margin-top: 6px; font-size: 15px; }
+/* Mentre llegeix, un pols que passa per la línia: el mateix gest que el balanç. */
+.plat-pols { display: block; position: relative; height: 1px; margin-top: var(--e4); background: var(--fil); overflow: hidden; }
+.plat-pols::after { content: ""; position: absolute; top: 0; left: 0; width: 28%; height: 1px; background: var(--t4);
+                    animation: passa 1.4s var(--ease-out) infinite; }
+@keyframes passa { from { transform: translateX(-100%); } to { transform: translateX(360%); } }
+.plat-titol { font-size: 22px; font-weight: 600; letter-spacing: -.01em; line-height: 1.2; }
+.plat-titol::first-letter { text-transform: uppercase; }
+.plat-nota { margin-top: 6px; }
+.plat-llista { margin-top: var(--e4); border-top: 1px solid var(--fil-fort); }
+.plat-fila { display: grid; grid-template-columns: minmax(0, 1fr) 92px var(--toc); grid-template-areas: "nom nom treu" "grams surt treu";
+             gap: var(--e2) 10px; align-items: center; padding: var(--e3) 0; border-bottom: 1px solid var(--fil); }
+.plat-nom { grid-area: nom; }
+.plat-nom .entrada { font-weight: 600; }
+.plat-grams { grid-area: grams; display: flex; align-items: center; gap: 6px; max-width: 120px; }
+.plat-grams .entrada { text-align: right; }
+.plat-grams span { font-size: 14px; color: var(--tinta-2); }
+.plat-surt { grid-area: surt; text-align: right; line-height: 1.2; white-space: nowrap; font-size: 15px; font-weight: 600; }
+.plat-surt .ku { margin-left: 2px; font-size: 13px; font-weight: 500; color: var(--tinta-2); }
+.plat-surt .p { display: block; font-size: 13px; font-weight: 500; color: var(--tinta-2); }
+.plat-fila .treu { grid-area: treu; }
+.plat-apat { display: flex; align-items: center; justify-content: space-between; gap: var(--e3); margin-top: var(--e4); }
+.plat-apat > div { display: flex; gap: var(--e5); }
+.plat-apat button {
+  min-height: var(--toc); padding: 0; border: 0; background: none; cursor: pointer;
+  font-size: 12px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta-2);
+  box-shadow: inset 0 -2px 0 transparent; transition: color 150ms ease, box-shadow 150ms ease;
+}
+.plat-apat button[aria-checked="true"] { color: var(--tinta); box-shadow: inset 0 -2px 0 var(--t4); }
+.plat-apat button:focus-visible { outline: 2px solid var(--t4); outline-offset: 2px; }
+.plat .camp-mal { margin-top: var(--e3); }
+.plat-accions { display: grid; gap: var(--e2); margin-top: var(--e4); }
+.plat-pista { margin-top: var(--e4); border-top: 1px solid var(--fil); }
+.plat-pista summary { min-height: var(--toc); display: flex; align-items: center; cursor: pointer;
+                      font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.plat-pista[open] { padding-bottom: var(--e3); }
+.plat-pista .camp { margin-bottom: 6px; }
+.plat-pista .btn { margin-top: var(--e2); }
+.plat-altra { margin-top: var(--e2); }
+
 .inscripcio { margin-top: var(--e3); padding: var(--e3) 0 var(--e4); border-top: 1px solid var(--fil-fort); border-bottom: 1px solid var(--fil); }
 .inscripcio[hidden] { display: none; }
 .inscripcio-franja { display: flex; justify-content: space-between; align-items: center; gap: var(--e2); margin-bottom: var(--e2); }
@@ -463,7 +510,7 @@ input[type="file"].entrada { padding: var(--e3); font-size: 14px; }
 <body>
 <!-- GENERAT PER eines/construeix.mjs — NO EDITIS AQUEST FITXER.
      La font són els fitxers de apps-script/. Torna a executar npm run construeix. -->
-<script>window.MARCA_JEFE = "2026-10-08 00:26 · en curs";</script>
+<script>window.MARCA_JEFE = "2026-10-15 23:21 · en curs";</script>
 <!--
   THESIS: cada dia és una carena amb un pols a la posició del seu balanç; la
     setmana i el mes són les carenes apilades. Germana de l'app del cos.
@@ -499,6 +546,11 @@ input[type="file"].entrada { padding: var(--e3); font-size: 14px; }
 
   <!-- Objectius: la línia de traços del punt de control sobre una carena. -->
   <symbol id="ic-ajust" viewBox="0 0 24 24"><path d="M3 18h18"/><path d="M15 4v16" stroke-dasharray="2 2.5"/><path d="M3 18c4 0 5-6 7-6s3 6 7 6"/></symbol>
+
+  <!-- La foto del plat. -->
+  <symbol id="ic-camera" viewBox="0 0 24 24">
+    <path d="M3 8.5h4l1.6-2.5h6.8L17 8.5h4V19H3z"/><path d="M12 16.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/>
+  </symbol>
 
   <!-- Els avisos al mòbil. -->
   <symbol id="ic-campana" viewBox="0 0 24 24">
@@ -555,7 +607,7 @@ input[type="file"].entrada { padding: var(--e3); font-size: 14px; }
 
 <script>
 /* GENERAT PER eines/construeix.mjs — NO EDITIS AQUEST FITXER. */
-window.MARCA_JEFE = "2026-10-08 00:26 · en curs";
+window.MARCA_JEFE = "2026-10-15 23:21 · en curs";
 </script>
 
 <script>
@@ -2155,6 +2207,7 @@ App.registraVista('nutricio', {
           '<div class="columna">' +
             '<section class="sec" aria-labelledby="t-apats">' +
               '<div class="sec-cap"><h2 id="t-apats">Àpats</h2><span class="gravat">' + esc(diaMesCurt(d.data)) + '</span></div>' +
+              (d.data === fmt.avui() ? blocFoto() : '') +
               '<div id="col-apats">' +
                 APATS.map(function (m, i) { return blocApat(d, m, i); }).join('') +
               '</div>' +
@@ -2168,6 +2221,7 @@ App.registraVista('nutricio', {
       lligaCapcalera();
       lligaBalanc();
       lligaApats();
+      lligaFoto();
       lligaAvisos();
     }
 
@@ -2764,6 +2818,312 @@ App.registraVista('nutricio', {
           });
         });
       });
+    }
+
+    // ---------------------------------------------------------- la foto
+
+    /* LA FOTO DEL PLAT: el camí més curt de tots.
+       Fas la foto, el servidor hi mira què hi ha i en quina quantitat, i
+       aquí surt la llista amb els grams, les calories i la proteïna. NO
+       S'APUNTA SOLA: una foto no sap si l'arròs porta oli ni quant pesa el
+       plat, i un número inventat que entra sense que el miris és un error que
+       ja no veus. Però repassar-la és un cop d'ull i un toc —l'àpat ja ve
+       triat per l'hora—, que és el que costava de debò: teclejar-ho. */
+
+    /* L'àpat que toca segons l'hora del telèfon. Els horaris d'aquí: dinar
+       fins a dos quarts de cinc, berenar fins a les vuit i sopar a partir
+       d'aleshores. El que es menja de matinada és el sopar que s'allarga. */
+    function apatDeLHora() {
+      var ara = new Date();
+      var h = ara.getHours() + ara.getMinutes() / 60;
+      var clau = (h >= 5 && h < 16.5) ? 'dinar' : (h >= 16.5 && h < 20) ? 'berenar' : 'sopar';
+      return APATS.filter(function (m) { return m.clau === clau; })[0];
+    }
+
+    function blocFoto() {
+      return '<div class="foto-plat">' +
+        '<button class="btn btn-primari btn-ple" type="button" data-foto>' + ic('camera', 'ic-p') +
+          'Fotografia el plat</button>' +
+        '<p class="menut" data-foto-on>Calcula les calories i la proteïna i ho apunta ' +
+          esc(apatDeLHora().art) + '.</p>' +
+        '<input type="file" accept="image/*" capture="environment" data-foto-fitxer hidden tabindex="-1" aria-hidden="true">' +
+      '</div>';
+    }
+
+    function lligaFoto() {
+      var b = arrel.querySelector('[data-foto]');
+      var inp = arrel.querySelector('[data-foto-fitxer]');
+      if (!b || !inp) return;
+      b.addEventListener('click', function () {
+        // Si l'última foto era la mateixa, sense buidar-lo no salta `change`.
+        inp.value = '';
+        inp.click();
+      });
+      inp.addEventListener('change', function () {
+        var f = inp.files && inp.files[0];
+        if (f) obrePlat(f);
+      });
+    }
+
+    /* MÉS PETITA ABANS DE SORTIR. La foto del mòbil fa tres o quatre megues,
+       i a Apps Script hi va en text: amb 1.280 px de costat el model hi veu
+       igual de bé i el viatge passa a ser d'uns 200 kB. */
+    function redueixFoto(fitxer) {
+      return new Promise(function (ok, ko) {
+        var url = URL.createObjectURL(fitxer);
+        var img = new Image();
+        img.onload = function () {
+          var w = img.naturalWidth, h = img.naturalHeight;
+          var f = Math.min(1, 1280 / Math.max(w, h));
+          var c = document.createElement('canvas');
+          c.width = Math.round(w * f); c.height = Math.round(h * f);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          ok({ url: url, b64: c.toDataURL('image/jpeg', 0.82).split(',')[1] });
+        };
+        img.onerror = function () {
+          URL.revokeObjectURL(url);
+          ko(new Error('No he pogut obrir la foto. Torna-la a fer.'));
+        };
+        img.src = url;
+      });
+    }
+
+    var urlPlat = null;   // la miniatura del plat obert; s'allibera en tancar-lo
+
+    function obrePlat(fitxer) {
+      if (urlPlat) { URL.revokeObjectURL(urlPlat); urlPlat = null; }
+      var estat = { apat: apatDeLHora().clau, items: [], b64: null, plat: '', nota: '', pista: '' };
+
+      var cos = App.modal('El plat',
+        '<div class="plat">' +
+          '<img class="plat-foto" alt="La foto del plat" data-plat-foto hidden>' +
+          '<div class="plat-cos" data-plat-cos aria-live="polite"></div>' +
+        '</div>',
+        function () { if (urlPlat) { URL.revokeObjectURL(urlPlat); urlPlat = null; } });
+
+      var foto = cos.querySelector('[data-plat-foto]');
+      var lloc = cos.querySelector('[data-plat-cos]');
+
+      function llegint() {
+        lloc.innerHTML = '<div class="plat-llegint" role="status">' +
+          '<span class="gravat">Llegint el plat</span>' +
+          '<p>Mirant què hi ha i quant n\'hi ha. Triga uns segons.</p>' +
+          '<span class="plat-pols" aria-hidden="true"></span>' +
+        '</div>';
+      }
+
+      function falla(err) {
+        var text = err && err.xarxa
+          ? 'Sense connexió no puc llegir la foto. Torna-ho a provar quan tinguis cobertura.'
+          : (err && err.message) || 'No he pogut llegir el plat.';
+        lloc.innerHTML =
+          '<p class="camp-mal" role="alert">' + esc(text) + '</p>' +
+          '<div class="plat-accions">' +
+            (estat.b64 ? '<button class="btn btn-primari btn-ple" type="button" data-plat-torna>Torna-ho a provar</button>' : '') +
+            '<button class="btn btn-ple" type="button" data-plat-altra>Fes una altra foto</button>' +
+          '</div>';
+        lligaComuns();
+      }
+
+      function llegeix() {
+        llegint();
+        crida('nutricio', 'llegeixFoto', { imatge: estat.b64, mime: 'image/jpeg', pista: estat.pista })
+          .then(function (r) {
+            estat.plat = r.plat || '';
+            estat.nota = r.nota || '';
+            estat.items = (r.aliments || []).map(function (a) {
+              return { nom: a.nom, grams: r0(a.grams), kcal100: Number(a.kcal100) || 0, prot100: Number(a.prot100) || 0 };
+            });
+            pintaResultat();
+          })
+          .catch(falla);
+      }
+
+      function kcalDe(a) { return (num(a.grams) || 0) * a.kcal100 / 100; }
+      function protDe(a) { return (num(a.grams) || 0) * a.prot100 / 100; }
+
+      function pintaResultat() {
+        if (!estat.items.length) {
+          lloc.innerHTML =
+            '<p class="plat-titol">' + esc(estat.nota || 'A la foto no hi veig menjar.') + '</p>' +
+            '<div class="plat-accions">' +
+              '<button class="btn btn-primari btn-ple" type="button" data-plat-altra>Fes una altra foto</button>' +
+            '</div>';
+          lligaComuns();
+          return;
+        }
+
+        lloc.innerHTML =
+          (estat.plat ? '<p class="plat-titol">' + esc(estat.plat) + '</p>' : '') +
+          (estat.nota ? '<p class="menut plat-nota">' + esc(estat.nota) + '</p>' : '') +
+
+          '<ul class="plat-llista">' + estat.items.map(function (a, i) {
+            return '<li class="plat-fila" data-i="' + i + '">' +
+              '<div class="plat-nom">' +
+                '<label class="nomes-lectors" for="pn-' + i + '">Aliment ' + (i + 1) + '</label>' +
+                '<input id="pn-' + i + '" class="entrada" data-camp="nom" autocomplete="off" value="' + esc(a.nom) + '">' +
+              '</div>' +
+              '<div class="plat-grams">' +
+                '<label class="nomes-lectors" for="pg-' + i + '">Grams</label>' +
+                '<input id="pg-' + i + '" class="entrada num" data-camp="grams" inputmode="decimal" autocomplete="off" value="' + esc(String(a.grams)) + '">' +
+                '<span aria-hidden="true">g</span>' +
+              '</div>' +
+              '<p class="plat-surt" data-surt></p>' +
+              '<button class="treu" type="button" data-plat-treu="' + i + '" aria-label="Treu ' + esc(a.nom) + '">' +
+                ic('tancar', 'ic-p') + '</button>' +
+            '</li>';
+          }).join('') + '</ul>' +
+
+          '<div class="plat-apat" role="radiogroup" aria-labelledby="plat-apat-t">' +
+            '<span class="gravat" id="plat-apat-t">Àpat</span>' +
+            '<div>' + APATS.map(function (m) {
+              return '<button type="button" role="radio" data-plat-apat="' + m.clau + '" aria-checked="' +
+                (m.clau === estat.apat ? 'true' : 'false') + '">' + esc(m.nom) + '</button>';
+            }).join('') + '</div>' +
+          '</div>' +
+
+          '<p class="camp-mal" data-plat-mal role="alert" hidden></p>' +
+          '<div class="plat-accions">' +
+            '<button class="btn btn-primari btn-ple" type="button" data-plat-apunta></button>' +
+          '</div>' +
+
+          '<details class="plat-pista">' +
+            '<summary>No és ben bé això?</summary>' +
+            '<label class="camp" for="plat-pista"><span>Explica-ho i ho torno a mirar</span></label>' +
+            '<input id="plat-pista" class="entrada" data-plat-pista autocomplete="off" enterkeyhint="send"' +
+              ' placeholder="p. ex. arròs integral, mitja ració" value="' + esc(estat.pista) + '">' +
+            '<button class="btn btn-ple" type="button" data-plat-torna>Torna-ho a llegir</button>' +
+          '</details>' +
+          '<button class="enllac plat-altra" type="button" data-plat-altra>' + ic('camera', 'ic-p') + 'Fes una altra foto</button>';
+
+        lloc.querySelectorAll('.plat-fila').forEach(function (fila) {
+          var a = estat.items[Number(fila.dataset.i)];
+          fila.querySelectorAll('[data-camp]').forEach(function (inp) {
+            inp.addEventListener('input', function () {
+              a[inp.dataset.camp] = inp.value;
+              inp.removeAttribute('aria-invalid');
+              var m = lloc.querySelector('[data-plat-mal]');
+              if (m) m.hidden = true;
+              refresca();
+            });
+          });
+        });
+        lloc.querySelectorAll('[data-plat-treu]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            guardaCamps();
+            estat.items.splice(Number(b.dataset.platTreu), 1);
+            pintaResultat();
+          });
+        });
+        lloc.querySelectorAll('[data-plat-apat]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            estat.apat = b.dataset.platApat;
+            lloc.querySelectorAll('[data-plat-apat]').forEach(function (x) {
+              x.setAttribute('aria-checked', x === b ? 'true' : 'false');
+            });
+            refresca();
+          });
+        });
+        var pista = lloc.querySelector('[data-plat-pista]');
+        pista.addEventListener('input', function () { estat.pista = pista.value; });
+        pista.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') { e.preventDefault(); estat.pista = pista.value; llegeix(); }
+        });
+        lloc.querySelector('[data-plat-apunta]').addEventListener('click', apunta);
+        lligaComuns();
+        refresca();
+      }
+
+      // Els camps ja escrits es queden a `estat` en temps real; això és per si de cas.
+      function guardaCamps() {
+        lloc.querySelectorAll('.plat-fila').forEach(function (fila) {
+          var a = estat.items[Number(fila.dataset.i)];
+          fila.querySelectorAll('[data-camp]').forEach(function (inp) { a[inp.dataset.camp] = inp.value; });
+        });
+      }
+
+      /* Cada fila diu el que surt amb els grams que hi ha ara, i el botó diu
+         on va i quant suma. Corregir 180 g a 120 g d'arròs es veu al moment. */
+      function refresca() {
+        var tk = 0, tp = 0;
+        lloc.querySelectorAll('.plat-fila').forEach(function (fila) {
+          var a = estat.items[Number(fila.dataset.i)];
+          var k = kcalDe(a), p = protDe(a);
+          tk += k; tp += p;
+          fila.querySelector('[data-surt]').innerHTML =
+            m0(k) + '<span class="ku">kcal</span><span class="p">' + r1(p) + ' g</span>';
+        });
+        var m = APATS.filter(function (x) { return x.clau === estat.apat; })[0];
+        var b = lloc.querySelector('[data-plat-apunta]');
+        if (b) b.textContent = 'Apunta-ho ' + m.art + ' · ' + m0(tk) + ' kcal · ' + r1(tp) + ' g prot';
+      }
+
+      function apunta() {
+        guardaCamps();
+        var mal = lloc.querySelector('[data-plat-mal]');
+        for (var i = 0; i < estat.items.length; i++) {
+          var a = estat.items[i];
+          var camp = null, text = null;
+          var g = numExacte(a.grams);
+          if (!String(a.nom || '').trim()) { text = 'Hi ha un aliment sense nom.'; camp = 'nom'; }
+          else if (g === null || g <= 0) { text = 'Posa-hi els grams de «' + String(a.nom).trim() + '».'; camp = 'grams'; }
+          else if (g > SOSTRE.grams) { text = 'Mira els grams de «' + String(a.nom).trim() + '».'; camp = 'grams'; }
+          if (text) {
+            mal.textContent = text;
+            mal.hidden = false;
+            var inp = lloc.querySelector('.plat-fila[data-i="' + i + '"] [data-camp="' + camp + '"]');
+            if (inp) { inp.setAttribute('aria-invalid', 'true'); try { inp.focus(); } catch (e) {} }
+            return;
+          }
+        }
+
+        var b = lloc.querySelector('[data-plat-apunta]');
+        b.disabled = true;
+        b.dataset.carregant = '1';
+        var m = APATS.filter(function (x) { return x.clau === estat.apat; })[0];
+        var n = estat.items.length;
+        escriu('nutricio', 'afegeixPlat', {
+          data: fmt.avui(), apat: estat.apat,
+          aliments: estat.items.map(function (a) {
+            return { nom: String(a.nom).trim(), grams: num(a.grams), kcal100: a.kcal100, prot100: a.prot100 };
+          })
+        }, quePinto()).then(function (r) {
+          App.tancaModal();
+          var tocat = !navigator.userActivation || navigator.userActivation.hasBeenActive;
+          if (navigator.vibrate && tocat) { try { navigator.vibrate(12); } catch (e) {} }
+          App.brindis('Plat apuntat ' + m.art + ' · ' + n + (n === 1 ? ' aliment' : ' aliments'));
+          Cau.oblida('nutricio.');
+          aplica(r, false, true);
+        }).catch(function (err) {
+          b.disabled = false;
+          b.dataset.carregant = '0';
+          mal.textContent = err && err.xarxa
+            ? 'Sense connexió no s\'ha apuntat. Torna-ho a provar quan tinguis cobertura.'
+            : (err && err.message) || 'No s\'ha pogut apuntar.';
+          mal.hidden = false;
+        });
+      }
+
+      function lligaComuns() {
+        lloc.querySelectorAll('[data-plat-torna]').forEach(function (b) {
+          b.addEventListener('click', llegeix);
+        });
+        lloc.querySelectorAll('[data-plat-altra]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var inp = arrel.querySelector('[data-foto-fitxer]');
+            if (inp) { inp.value = ''; inp.click(); }
+          });
+        });
+      }
+
+      llegint();
+      redueixFoto(fitxer).then(function (f) {
+        urlPlat = f.url;
+        foto.src = f.url;
+        foto.hidden = false;
+        estat.b64 = f.b64;
+        llegeix();
+      }).catch(falla);
     }
 
     // -------------------------------------------------------------- ajustos

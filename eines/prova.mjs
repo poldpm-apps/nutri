@@ -1566,5 +1566,101 @@ console.log('\nPortar les dades de JEFE: copiar, mai moure');
   cal('amb ID_FULL_JEFE a les propietats, mana aquest', r4.origen === triat);
 }
 
+// ------------------------------------------------------------- la foto
+console.log('\nLa foto del plat: llegir no escriu, apuntar ho fa d\'un cop');
+{
+  const ctx = carregaTotElServidor();
+  const config = { ia_activa: 'NO' };
+  ctx.Config = {
+    get: (k, d) => (config[k] !== undefined ? config[k] : d),
+    esSi: (k) => String(config[k]).toUpperCase() === 'SI',
+    set: (k, v) => { config[k] = String(v); },
+    getNum: (k, d) => d
+  };
+  let clau = null;
+  ctx.PropertiesService = { getScriptProperties: () => ({ getProperty: (k) => (k === 'CLAU_IA' ? clau : null) }) };
+  const inserits = [];
+  ctx.Dades = {
+    llegeix: () => [],
+    insereixMoltes: (full, files) => { inserits.push({ full, files }); return files; }
+  };
+  let models = ['gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.6-flash-image',
+                'gemini-3.6-flash-preview', 'text-embedding-004'];
+  const preguntes = [];
+  let resposta = JSON.stringify({ plat: 'arròs amb pollastre', nota: '', aliments: [
+    { nom: 'arròs blanc', grams: 200, kcal: 260, proteina: 5.4 },
+    { nom: 'pit de pollastre', grams: 100, kcal: 165, proteina: 31 },
+    { nom: 'impossible', grams: 0, kcal: 10, proteina: 0 }
+  ] });
+  ctx.IA = {
+    models: () => models.map((id) => ({ id })),
+    genera: (p) => {
+      preguntes.push(p);
+      if (p.model === 'gemini-3.5-flash' && models.indexOf('gemini-3.5-flash') === -1) {
+        throw new Error('Error de l\'API (codi 404): models/gemini-3.5-flash is not found');
+      }
+      return { text: resposta, model: p.model };
+    }
+  };
+  const N = ctx.Nutricio;
+  const foto = { imatge: 'QUJD', mime: 'image/jpeg' };
+
+  let err = '';
+  try { N.llegeixFoto(foto); } catch (e) { err = e.message; }
+  cal('sense clau ho diu, i diu on posar-la', /CLAU_IA/.test(err) && preguntes.length === 0, err);
+
+  clau = 'una-clau';
+  const r = N.llegeixFoto(foto);
+  cal('tria el Flash estable més nou, no el lite, la imatge ni la prova', preguntes[0].model === 'gemini-3.5-flash',
+      preguntes[0].model);
+  cal('i se\'n recorda', config.model_foto === 'gemini-3.5-flash', config.model_foto);
+  cal('encén la IA si hi ha clau', config.ia_activa === 'SI', config.ia_activa);
+  cal('la foto viatja com a imatge', preguntes[0].missatges[0].parts[0].inlineData.mimeType === 'image/jpeg');
+  cal('passa les kcal del plat a kcal per 100 g', r.aliments[0].kcal100 === 130 && r.aliments[0].prot100 === 2.7,
+      JSON.stringify(r.aliments[0]));
+  cal('el que no té grams no passa', r.aliments.length === 2, JSON.stringify(r.aliments));
+  cal('llegir no escriu res', inserits.length === 0);
+
+  models = models.filter((m) => m !== 'gemini-3.5-flash');
+  preguntes.length = 0;
+  N.llegeixFoto(foto);
+  /* Un estable abans que un de prova encara que sigui més vell: els de prova
+     canvien de nom o plegen sense avís. Quan Google retira l'estable, ja no
+     surt a la llista i passa al següent. */
+  cal('si el model ja no existeix, en tria un altre (estable) i torna a preguntar',
+      preguntes.length === 2 && preguntes[1].model === 'gemini-2.5-flash' &&
+      config.model_foto === 'gemini-2.5-flash', JSON.stringify(preguntes.map((p) => p.model)));
+
+  resposta = 'això no és JSON';
+  err = '';
+  try { N.llegeixFoto(foto); } catch (e) { err = e.message; }
+  cal('si no entén la resposta, ho diu amb paraules', /No he sabut llegir el plat/.test(err), err);
+
+  err = '';
+  try { N.llegeixFoto({ imatge: 'x'.repeat(5 * 1024 * 1024), mime: 'image/jpeg' }); } catch (e) { err = e.message; }
+  cal('una foto massa grossa no surt cap a Google', /massa grossa/.test(err), err);
+
+  const fet = N.afegeixPlat({ data: '2026-10-15', apat: 'sopar', aliments: [
+    { nom: 'arròs blanc', grams: 150, kcal100: 130, prot100: 2.7 },
+    { nom: 'pit de pollastre', grams: 100, kcal100: 165, prot100: 31 }
+  ] });
+  cal('apunta tot el plat d\'un sol cop', inserits.length === 1 && inserits[0].files.length === 2 && fet.apuntats === 2,
+      JSON.stringify(inserits));
+  cal('a l\'àpat triat, al dia que toca i marcat com a foto',
+      inserits[0].files.every((f) => f.apat === 'sopar' && f.data === '2026-10-15' && f.origen === 'foto'));
+
+  err = '';
+  try { N.afegeixPlat({ apat: 'esmorzar', aliments: [{ nom: 'a', grams: 1 }] }); } catch (e) { err = e.message; }
+  cal('un àpat que no existeix no s\'apunta', /àpat/.test(err), err);
+  err = '';
+  try { N.afegeixPlat({ apat: 'dinar', aliments: [{ nom: 'a', grams: 0 }] }); } catch (e) { err = e.message; }
+  cal('sense grams no s\'apunta', /grams/.test(err) && inserits.length === 1, err);
+
+  resposta = JSON.stringify({ plat: '', nota: '', aliments: [] });
+  const params = { imatge: 'QUJD', mime: 'image/jpeg' };
+  ctx.MODUL_NUTRICIO().accions.llegeixFoto(params);
+  cal('la foto no es queda als paràmetres que veu el registre d\'errors', params.imatge === '[foto]', params.imatge);
+}
+
 console.log(falles ? '\n' + falles + ' falla(des).\n' : '\nTot correcte.\n');
 process.exit(falles ? 1 : 0);

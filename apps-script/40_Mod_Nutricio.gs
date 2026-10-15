@@ -59,7 +59,7 @@ function MODUL_NUTRICIO() {
           { nom: 'grams',           tipus: 'num'  },
           { nom: 'kcal100',         tipus: 'num'  },
           { nom: 'prot100',         tipus: 'num'  },
-          { nom: 'origen',          tipus: 'text', valors: ['app', 'fitfat', 'conversa'] },
+          { nom: 'origen',          tipus: 'text', valors: ['app', 'fitfat', 'conversa', 'foto'] },
           { nom: 'esborrat_el',     tipus: 'iso'  },
           { nom: 'creat_el',        tipus: 'iso'  },
           { nom: 'actualitzat_el',  tipus: 'iso'  }
@@ -93,6 +93,13 @@ function MODUL_NUTRICIO() {
       setmana:        function (p) { return Nutricio.periode(p.data || Utils.avui(), 'setmana'); },
       mes:            function (p) { return Nutricio.periode(p.data || Utils.avui(), 'mes'); },
       afegeix:        function (p) { return Nutricio.afegeix(p); },
+      /* La foto viatja en base64 i, si alguna cosa falla, el registre d'errors
+         desa els paràmetres de la petició: sense treure-la abans, cada error
+         ompliria una cel·la del full amb dos-cents mil caràcters. */
+      llegeixFoto:    function (p) {
+        try { return Nutricio.llegeixFoto(p); } finally { p.imatge = '[foto]'; }
+      },
+      afegeixPlat:    function (p) { return Nutricio.afegeixPlat(p); },
       treu:           function (p) { return Nutricio.treu(p.id); },
       activitat:      function (p) { return Nutricio.desaActivitat(p.data, p.kcal); },
       aliments:       function ()  { return Nutricio.aliments(); },
@@ -611,6 +618,168 @@ var Nutricio = (function () {
     return { titol: 'Nutrició', linies: linies };
   }
 
+  // ------------------------------------------------------------ la foto
+
+  /* ==========================================================================
+     LA FOTO DEL PLAT
+
+     Fas una foto, el model de visió hi mira què hi ha i en quina quantitat, i
+     torna una llista d'aliments amb grams, calories i proteïna. NO S'APUNTA
+     SOL: la pantalla l'ensenya, la pots corregir i un toc l'apunta. Una foto
+     no sap si l'arròs porta oli ni quant pesa el plat; el número que surt és
+     una estimació, i una estimació apuntada sense mirar-la és un error que
+     ja no veus.
+
+     EL MODEL ES TRIA SOL. Google retira els models sense gaire avís —el
+     2.5 Flash, que és el que hi havia per defecte, plega el 16 d'octubre del
+     2026—. Per això no n'hi ha cap clavat aquí: es demana a la clau quins pot
+     fer servir, es tria el Flash més nou i es desa a `model_foto`. Si un dia
+     contesta que ja no existeix, es torna a triar i es repeteix la pregunta.
+     Si vols un model concret, escriu-lo a `model_foto` del full `_Config`.
+     ========================================================================== */
+
+  var MIDA_MAX_FOTO = 4 * 1024 * 1024;   // en caràcters de base64: una foto reduïda en fa uns 200.000
+
+  function triaModelFoto_(nou) {
+    var desat = String(Config.get('model_foto', '') || '').trim();
+    if (desat && !nou) return desat;
+
+    var models = IA.models().map(function (m) { return m.id; });
+    var versio = function (id) {
+      var m = /gemini-(\d+(?:\.\d+)?)/.exec(id);
+      return m ? parseFloat(m[1]) : 0;
+    };
+    var bons = models.filter(function (id) {
+      return /^gemini-[\d.]+-flash(-latest)?$/.test(id);
+    });
+    if (!bons.length) {
+      bons = models.filter(function (id) {
+        return /flash/.test(id) && !/lite|image|tts|live|audio|embed|thinking/.test(id);
+      });
+    }
+    if (!bons.length) throw new Error('La teva clau de Gemini no té cap model que sàpiga mirar fotos.');
+    bons.sort(function (a, b) {
+      return versio(b) - versio(a) ||
+             (/preview|exp/.test(a) ? 1 : 0) - (/preview|exp/.test(b) ? 1 : 0);
+    });
+    if (bons[0] !== desat) Config.set('model_foto', bons[0]);
+    return bons[0];
+  }
+
+  var INSTRUCCIONS_FOTO =
+    'Ets un dietista que estima el que hi ha en un plat a partir d\'una foto. ' +
+    'Identifica cada aliment que es veu i estima\'n els grams que hi ha al plat (pes cuit, tal com ' +
+    'es menja), les kilocalories i els grams de proteïna d\'aquella quantitat. Compta l\'oli, les ' +
+    'salses i el pa si es veuen o si el plat normalment en porta. Fes servir mides de referència ' +
+    '(plat de 26 cm, coberts, mans) per calcular les quantitats. Si un aliment és a la llista del ' +
+    'rebost de l\'usuari, fes servir el seu nom i els seus valors per 100 g. Noms curts en català, ' +
+    'en minúscula, sense marques. Si a la foto no hi ha menjar, torna la llista buida i explica-ho ' +
+    'a la nota. Contesta NOMÉS amb JSON: {"plat": "descripció de 2 a 5 paraules", "aliments": ' +
+    '[{"nom": "...", "grams": número, "kcal": número, "proteina": número}], "nota": "una frase ' +
+    'curta sobre el que és més incert, o buit"}';
+
+  /** Mira la foto i torna la llista proposada. No escriu res. */
+  function llegeixFoto(p) {
+    var imatge = String(p.imatge || '');
+    var mime = String(p.mime || 'image/jpeg');
+    if (!imatge) throw new Error('No ha arribat cap foto.');
+    if (imatge.length > MIDA_MAX_FOTO) throw new Error('La foto és massa grossa. Torna-la a fer.');
+    if (!/^image\/(jpeg|png|webp)$/.test(mime)) throw new Error('Aquest format de foto no el sé llegir.');
+
+    if (!PropertiesService.getScriptProperties().getProperty(PROP_CLAU_IA)) {
+      throw new Error('Per llegir fotos falta la clau de Gemini: posa-la a les propietats de ' +
+                      'l\'script amb el nom CLAU_IA.');
+    }
+    /* La capa d'IA té un interruptor al full —`ia_activa`— que ve apagat. Si
+       hi ha clau i demanes llegir una foto, és que la vols encesa. */
+    if (!Config.esSi('ia_activa')) Config.set('ia_activa', 'SI');
+
+    var rebost = aliments().slice(0, 200).map(function (a) {
+      return a.nom + ': ' + Math.round(a.kcal100) + ' kcal, ' + r1(a.prot100) + ' g prot /100 g';
+    });
+    var text = 'Estima el que hi ha en aquest plat.' +
+      (p.pista ? '\nEl que diu l\'usuari del plat: ' + Utils.talla(String(p.pista), 300) : '') +
+      (rebost.length ? '\nRebost de l\'usuari (valors per 100 g):\n' + rebost.join('\n') : '');
+
+    var pregunta = function (model) {
+      return IA.genera({
+        sistema: INSTRUCCIONS_FOTO,
+        missatges: [{ role: 'user', parts: [
+          { inlineData: { mimeType: mime, data: imatge } },
+          { text: text }
+        ] }],
+        model: model,
+        json: true,
+        temperatura: 0.2,
+        maxTokens: 1500
+      });
+    };
+
+    var model = triaModelFoto_(false);
+    var r;
+    try {
+      r = pregunta(model);
+    } catch (err) {
+      // El model desat ja no existeix: se'n tria un altre i es torna a preguntar, un cop.
+      if (!/codi 404|not found|is not supported/i.test(err.message || '')) throw err;
+      var altre = triaModelFoto_(true);
+      if (altre === model) throw err;
+      r = pregunta(altre);
+    }
+
+    var net = String(r.text || '').replace(/^```(?:json)?\s*|\s*```$/g, '');
+    var d = Utils.desJson(net, null);
+    if (!d || !Array.isArray(d.aliments)) {
+      throw new Error('No he sabut llegir el plat. Torna-ho a provar amb una foto més de prop.');
+    }
+
+    var llista = d.aliments.map(function (a) {
+      var g = Math.round(num_(a.grams));
+      var k = Math.max(0, num_(a.kcal));
+      var pt = Math.max(0, num_(a.proteina));
+      return {
+        nom: Utils.talla(String(a.nom || '').trim(), 60),
+        grams: g,
+        kcal100: g > 0 ? Math.round(k / g * 1000) / 10 : 0,
+        prot100: g > 0 ? Math.round(pt / g * 1000) / 10 : 0
+      };
+    }).filter(function (a) {
+      return a.nom && a.grams > 0 && a.grams <= 5000 && a.kcal100 <= 1000 && a.prot100 <= 100;
+    });
+
+    return {
+      plat: Utils.talla(String(d.plat || ''), 80),
+      nota: Utils.talla(String(d.nota || ''), 200),
+      aliments: llista,
+      model: r.model || model
+    };
+  }
+
+  /** Apunta d'un cop tot el que s'ha llegit del plat (i corregit, si cal). */
+  function afegeixPlat(p) {
+    var apat = String(p.apat || '');
+    if (['dinar', 'berenar', 'sopar'].indexOf(apat) === -1) throw new Error('Tria a quin àpat va.');
+    var items = Array.isArray(p.aliments) ? p.aliments : [];
+    var files = items.map(function (a) {
+      var nom = String(a.nom || '').trim();
+      var g = num_(a.grams);
+      if (!nom) throw new Error('Hi ha un aliment sense nom.');
+      if (g <= 0) throw new Error('Els grams de «' + nom + '» han de ser més grans que zero.');
+      return {
+        data: p.data || Utils.avui(),
+        apat: apat,
+        nom: nom,
+        grams: g,
+        kcal100: Math.max(0, num_(a.kcal100)),
+        prot100: Math.max(0, num_(a.prot100)),
+        origen: 'foto'
+      };
+    });
+    if (!files.length) throw new Error('No hi ha res per apuntar.');
+    Dades.insereixMoltes('Ingestes', files, 'ing');
+    return { apuntats: files.length };
+  }
+
   // ------------------------------------------------------------- pantalles
 
   /**
@@ -907,6 +1076,8 @@ var Nutricio = (function () {
     periode: periode,
     pantalla: pantalla,
     afegeix: afegeix,
+    llegeixFoto: llegeixFoto,
+    afegeixPlat: afegeixPlat,
     treu: treu,
     desaActivitat: desaActivitat,
     aliments: aliments,

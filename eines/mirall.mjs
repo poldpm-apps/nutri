@@ -465,6 +465,38 @@ const MOCK = `
         }
         return { ok: true };
       }
+      /* La foto: el mirall no té cap model que hi miri, o sigui que sempre «veu»
+         el mateix plat. El que es prova és el camí —foto reduïda, llista que es
+         pot corregir, àpat per l'hora i apuntar-ho tot d'un toc—, no l'encert. */
+      if (accio === 'llegeixFoto') {
+        window.__ultimaFoto = { mida: String(p.imatge || '').length, mime: p.mime, pista: p.pista || '' };
+        if (window.__fotoFalla) throw new Error(window.__fotoFalla);
+        if (window.__fotoBuida) return { plat: 'una taula', nota: 'A la foto no hi veig menjar.', aliments: [] };
+        return {
+          plat: 'arròs amb pollastre',
+          nota: "L'oli de l'arròs és el que costa més de veure.",
+          aliments: [
+            { nom: 'arròs blanc', grams: 180, kcal100: 130, prot100: 2.7 },
+            { nom: 'pit de pollastre a la planxa', grams: 120, kcal100: 165, prot100: 31 },
+            { nom: "oli d'oliva", grams: 10, kcal100: 884, prot100: 0 }
+          ],
+          model: 'mirall'
+        };
+      }
+      if (accio === 'afegeixPlat') {
+        window.__ultimPlat = p;
+        var dp = NUTRI.dia.dades;
+        var app = dp.apats.filter(function (a) { return a.clau === p.apat; })[0];
+        (p.aliments || []).forEach(function (x) {
+          var g2 = Number(x.grams) || 0;
+          app.items.push({ id: 'i' + (++nSeq), nom: x.nom, grams: g2,
+                           kcal100: Number(x.kcal100) || 0, prot100: Number(x.prot100) || 0,
+                           kcal: g2 * (Number(x.kcal100) || 0) / 100,
+                           prot: g2 * (Number(x.prot100) || 0) / 100 });
+        });
+        recalculaNutri();
+        return { apuntats: (p.aliments || []).length };
+      }
       if (accio === 'treu') {
         NUTRI.dia.dades.apats.forEach(function (a) {
           a.items = a.items.filter(function (i) { return i.id !== p.id; });
